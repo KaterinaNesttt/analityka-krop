@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSalesRouteImport } from './routes/_authenticated.sales'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated.analytics'
+import { Route as AuthenticatedSalesNewRouteImport } from './routes/_authenticated.sales.new'
 import { Route as AuthenticatedSalesIdRouteImport } from './routes/_authenticated.sales.$id'
 
 const PendingRoute = PendingRouteImport.update({
@@ -52,6 +53,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSalesNewRoute = AuthenticatedSalesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedSalesRoute,
+} as any)
 const AuthenticatedSalesIdRoute = AuthenticatedSalesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/sales/$id': typeof AuthenticatedSalesIdRoute
+  '/sales/new': typeof AuthenticatedSalesNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/sales': typeof AuthenticatedSalesRouteWithChildren
   '/sales/$id': typeof AuthenticatedSalesIdRoute
+  '/sales/new': typeof AuthenticatedSalesNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/sales': typeof AuthenticatedSalesRouteWithChildren
   '/_authenticated/sales/$id': typeof AuthenticatedSalesIdRoute
+  '/_authenticated/sales/new': typeof AuthenticatedSalesNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/sales'
     | '/sales/$id'
+    | '/sales/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/sales'
     | '/sales/$id'
+    | '/sales/new'
   id:
     | '__root__'
     | '/'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/sales'
     | '/_authenticated/sales/$id'
+    | '/_authenticated/sales/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +188,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/sales/new': {
+      id: '/_authenticated/sales/new'
+      path: '/new'
+      fullPath: '/sales/new'
+      preLoaderRoute: typeof AuthenticatedSalesNewRouteImport
+      parentRoute: typeof AuthenticatedSalesRoute
+    }
     '/_authenticated/sales/$id': {
       id: '/_authenticated/sales/$id'
       path: '/$id'
@@ -188,10 +207,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedSalesRouteChildren {
   AuthenticatedSalesIdRoute: typeof AuthenticatedSalesIdRoute
+  AuthenticatedSalesNewRoute: typeof AuthenticatedSalesNewRoute
 }
 
 const AuthenticatedSalesRouteChildren: AuthenticatedSalesRouteChildren = {
   AuthenticatedSalesIdRoute: AuthenticatedSalesIdRoute,
+  AuthenticatedSalesNewRoute: AuthenticatedSalesNewRoute,
 }
 
 const AuthenticatedSalesRouteWithChildren =
