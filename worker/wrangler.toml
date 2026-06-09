@@ -1,0 +1,29 @@
+name = "analityka-krop-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---------------------------------------------------------------
+# 1. Створіть D1 базу:
+#    wrangler d1 create analityka-krop
+#    Підставте database_id нижче.
+# 2. Прогоніть міграції:
+#    wrangler d1 migrations apply analityka-krop --remote
+# 3. Задайте секрети:
+#    wrangler secret put JWT_SECRET
+#    wrangler secret put JWT_REFRESH_SECRET
+#    wrangler secret put ADMIN_BOOTSTRAP_EMAIL
+#    wrangler secret put ADMIN_BOOTSTRAP_PASSWORD
+# 4. Деплой:
+#    wrangler deploy
+# ---------------------------------------------------------------
+
+[[d1_databases]]
+binding = "DB"
+database_name = "analityka-krop"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[vars]
+# Дозволений origin фронтенду (поставте URL Pages після деплою)
+ALLOWED_ORIGIN = "*"
