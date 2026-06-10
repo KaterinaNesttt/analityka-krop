@@ -122,7 +122,6 @@ export function AnalyticsPage() {
               <CardContent className="space-y-3">
                 <InsightLine icon={<Home className="h-4 w-4" />} label="Квартири" value={`${fmtNumber(data.apartmentCount)} угод`} />
                 <InsightLine icon={<Building2 className="h-4 w-4" />} label="Будинки" value={`${fmtNumber(data.houseCount)} угод`} />
-                <InsightLine icon={<AreaIcon className="h-4 w-4" />} label="Площа вказана" value={`${fmtNumber(data.withArea)} з ${fmtNumber(data.total)}`} />
                 <InsightLine icon={<TrendingDown className="h-4 w-4" />} label="Середній торг" value={data.avgDiscount == null ? "—" : `${fmtNumber(data.avgDiscount, 1)}%`} />
               </CardContent>
             </Card>
