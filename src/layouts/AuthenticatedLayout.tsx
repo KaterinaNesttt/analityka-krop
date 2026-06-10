@@ -11,12 +11,14 @@ import { roleLabel } from "@/lib/format";
 
 interface NavItem { to: string; label: string; icon: any; roles?: string[]; }
 
+const STAFF_ROLES = ["superuser", "admin", "moderator"];
+
 const NAV: NavItem[] = [
-  { to: "/dashboard", label: "Дашборд", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Дашборд", icon: LayoutDashboard, roles: STAFF_ROLES },
   { to: "/analytics", label: "Аналітика", icon: BarChart3 },
   { to: "/sales", label: "Продажі", icon: Table2 },
   { to: "/sales/new", label: "Додати продаж", icon: Plus },
-  { to: "/import", label: "Імпорт", icon: Upload },
+  { to: "/import", label: "Імпорт", icon: Upload, roles: STAFF_ROLES },
   { to: "/moderation", label: "Модерація", icon: ShieldCheck, roles: ["admin", "moderator"] },
   { to: "/users", label: "Користувачі", icon: Users, roles: ["admin"] },
   { to: "/settings", label: "Налаштування", icon: Settings },

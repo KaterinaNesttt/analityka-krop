@@ -2,6 +2,7 @@ name = "analityka-krop-api"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "7ca9a7fab54e9acdd7d234f1547058bc"
 
 # ---------------------------------------------------------------
 
@@ -17,7 +18,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "anal"
-database_id = "ecc0b259-038d-4641-9c68-a7d934d89ac8"
+database_id = "1cdd05a3-11b0-447d-ae91-ac0bcfff20d0"
 migrations_dir = "migrations"
 
 [vars]

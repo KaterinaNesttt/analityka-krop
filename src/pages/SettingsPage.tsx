@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth-context";
-import { API_BASE } from "@/lib/api";
-import { roleLabel } from "@/lib/format";
+import { roleLabel, statusLabel } from "@/lib/format";
 import { Moon, Sun } from "lucide-react";
 
 export function SettingsPage() {
@@ -28,18 +27,8 @@ export function SettingsPage() {
           <CardContent className="space-y-1 text-sm">
             <div><span className="text-muted-foreground">Email: </span>{user?.email}</div>
             <div><span className="text-muted-foreground">Роль: </span>{roleLabel(user?.role ?? "")}</div>
-            <div><span className="text-muted-foreground">Статус: </span>{user?.status}</div>
+            <div><span className="text-muted-foreground">Статус: </span>{statusLabel(user?.status ?? "")}</div>
             <p className="text-xs text-muted-foreground pt-2">Ваше імʼя та email не показуються іншим користувачам платформи.</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle className="text-base">API</CardTitle></CardHeader>
-          <CardContent className="text-sm space-y-1">
-            <div><span className="text-muted-foreground">Endpoint: </span><code className="text-xs">{API_BASE || "(відносний шлях)"}</code></div>
-            <p className="text-xs text-muted-foreground pt-1">
-              Налаштовується через змінну середовища <code>VITE_API_URL</code> при білді фронтенду.
-            </p>
           </CardContent>
         </Card>
       </div>

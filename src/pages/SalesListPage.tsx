@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { fmtDate, fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/lib/format";
-import { ExternalLink, LayoutGrid, List } from "lucide-react";
+import { ExternalLink, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 export function SalesListPage() {
   const { user } = useAuth();
   const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const [filters, setFilters] = useState<SalesFilters>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState("sale_date_desc");
   const [mode, setMode] = useState<"compact" | "detailed">("compact");
 
@@ -40,13 +41,21 @@ export function SalesListPage() {
             <SelectItem value="district">За районом</SelectItem>
           </SelectContent>
         </Select>
+        <Button variant={filtersOpen ? "default" : "outline"} size="sm" onClick={() => setFiltersOpen((v) => !v)}>
+          <SlidersHorizontal className="h-4 w-4 mr-1" />
+          Фільтр
+        </Button>
         <Button variant="outline" size="sm" onClick={() => setMode(mode === "compact" ? "detailed" : "compact")}>
           {mode === "compact" ? <LayoutGrid className="h-4 w-4 mr-1" /> : <List className="h-4 w-4 mr-1" />}
           {mode === "compact" ? "Детально" : "Компактно"}
         </Button>
       </PageHeader>
 
-      <div className="mb-4"><FiltersBar value={filters} onChange={setFilters} /></div>
+      {filtersOpen && (
+        <div className="mb-4 rounded-md border border-border/60 bg-muted/20 p-4">
+          <FiltersBar value={filters} onChange={setFilters} frameless />
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-0 overflow-x-auto">

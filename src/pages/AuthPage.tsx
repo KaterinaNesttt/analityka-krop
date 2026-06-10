@@ -19,7 +19,7 @@ export function AuthPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate(user.status === "approved" ? "/dashboard" : "/pending", { replace: true });
+      navigate(user.status === "approved" ? (user.role === "user" ? "/analytics" : "/dashboard") : "/pending", { replace: true });
     }
   }, [user, loading, navigate]);
 

@@ -1,6 +1,6 @@
 import type { Env } from './types';
 import { json, err, uid, nowIso } from './utils';
-import { requireApproved, requireRole } from './middleware';
+import { requireRole } from './middleware';
 
 // Простий парсер тексту з Telegram. Витягує очевидні поля.
 export function parseTelegramText(text: string): Record<string, any> {
@@ -53,7 +53,7 @@ export function parseTelegramText(text: string): Record<string, any> {
 }
 
 export async function parseTelegram(req: Request, env: Env): Promise<Response> {
-  const u = await requireApproved(req, env); if (u instanceof Response) return u;
+  const u = await requireRole(req, env, ['admin', 'moderator']); if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
   if (!body?.text || typeof body.text !== 'string') return err(400, 'Відсутній текст', env, req);
   const parsed = parseTelegramText(body.text);
@@ -139,7 +139,7 @@ function normalizeCsvRow(r: any, body: any): any {
 }
 
 export async function importCsv(req: Request, env: Env): Promise<Response> {
-  const u = await requireApproved(req, env); if (u instanceof Response) return u;
+  const u = await requireRole(req, env, ['admin', 'moderator']); if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
   const rows: any[] = Array.isArray(body?.rows) ? body.rows : [];
   if (!rows.length) return err(400, 'Немає рядків', env, req);

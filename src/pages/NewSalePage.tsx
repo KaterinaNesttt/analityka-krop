@@ -32,7 +32,7 @@ export function NewSalePage() {
       });
       await api("/api/sales", { method: "POST", body: payload });
       toast.success("Дані відправлено на перевірку");
-      navigate("/dashboard");
+      navigate("/sales");
     } catch (e: any) {
       toast.error(e.message);
     } finally { setBusy(false); }
@@ -76,7 +76,7 @@ export function NewSalePage() {
         </Card>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>Скасувати</Button>
+          <Button type="button" variant="outline" onClick={() => navigate("/sales")}>Скасувати</Button>
           <Button type="submit" disabled={busy}>{busy ? "..." : "Відправити на перевірку"}</Button>
         </div>
       </form>
