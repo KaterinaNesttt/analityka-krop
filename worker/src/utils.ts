@@ -128,7 +128,7 @@ export async function verifyJwt(token: string, secret: string): Promise<JwtPaylo
 // ---------- CORS / JSON helpers ----------
 export function corsHeaders(env: Env, req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') ?? '';
-  const allowedOrigins = [env.ALLOWED_ORIGIN, 'http://localhost:8080'];
+  const allowedOrigins = [...env.ALLOWED_ORIGIN.split(',').map((o) => o.trim()), 'http://localhost:8080'];
   const allowed = env.ALLOWED_ORIGIN === '*' || allowedOrigins.includes(origin) ? (env.ALLOWED_ORIGIN === '*' ? '*' : origin) : env.ALLOWED_ORIGIN;
   return {
     'Access-Control-Allow-Origin': allowed,

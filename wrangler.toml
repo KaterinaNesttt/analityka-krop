@@ -11,4 +11,4 @@ database_id = "1cdd05a3-11b0-447d-ae91-ac0bcfff20d0"
 migrations_dir = "migrations"
 
 [vars]
-ALLOWED_ORIGIN = "https://analityka-krop.pages.dev"
+ALLOWED_ORIGIN = "https://analityka-krop.pages.dev,http://localhost:8080"

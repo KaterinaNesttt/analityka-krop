@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), tsconfigPaths()],
   server: {
     port: 8080,
+    proxy: {
+      "/api": "http://localhost:8787",
+    },
   },
   build: {
     outDir: "dist",
