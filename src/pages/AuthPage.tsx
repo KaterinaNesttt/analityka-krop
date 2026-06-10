@@ -51,7 +51,7 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-accent/30">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-background to-accent/30">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">Аналітика Кроп</h1>

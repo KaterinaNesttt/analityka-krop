@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { FiltersBar, type SalesFilters } from "@/components/filters-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fmtMoney, fmtNumber } from "@/lib/format";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -60,6 +61,7 @@ const DISCOUNT_BUCKETS = [
 
 export function AnalyticsPage() {
   const [filters, setFilters] = useState<SalesFilters>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const sales = useQuery({
     queryKey: ["analytics-sales", filters],
     queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { ...filters, limit: 1000, sort: "sale_date_desc" } }),
@@ -69,11 +71,18 @@ export function AnalyticsPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Аналітика" description="Порівняння квартир і будинків за завантаженими CSV." />
+      <PageHeader title="Аналітика">
+        <Button variant={filtersOpen ? "default" : "outline"} size="sm" onClick={() => setFiltersOpen((v) => !v)}>
+          <SlidersHorizontal className="h-4 w-4 mr-1" />
+          Фільтр
+        </Button>
+      </PageHeader>
 
-      <section className="mb-5">
-        <FiltersBar value={filters} onChange={setFilters} />
-      </section>
+      {filtersOpen && (
+        <div className="mb-5 rounded-md border border-border/60 bg-muted/20 p-4">
+          <FiltersBar value={filters} onChange={setFilters} frameless />
+        </div>
+      )}
 
       {sales.isLoading ? (
         <LoadingGrid />

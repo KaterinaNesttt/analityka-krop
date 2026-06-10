@@ -4,11 +4,10 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { FiltersBar, type SalesFilters } from "@/components/filters-bar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { fmtDate, fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/lib/format";
+import { fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/lib/format";
 import { ExternalLink, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -29,7 +28,7 @@ export function SalesListPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Продажі" description={isStaff ? "Усі записи (включно з pending)" : "Підтверджені продажі"}>
+      <PageHeader title="Продажі">
         <Select value={sort} onValueChange={setSort}>
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -57,8 +56,7 @@ export function SalesListPage() {
         </div>
       )}
 
-      <Card>
-        <CardContent className="p-0 overflow-x-auto">
+      <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
               <tr>
@@ -83,7 +81,7 @@ export function SalesListPage() {
               )}
               {rows.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-muted/30">
-                  <td className="p-3 whitespace-nowrap">{fmtDate(r.sale_date)}</td>
+                  <td className="p-3 whitespace-nowrap">{fmtMonthYear(r.sale_date)}</td>
                   <td className="p-3">{r.building_type ?? propertyTypeLabel(r.property_type)}</td>
                   <td className="p-3">{r.district}</td>
                   <td className="p-3">{r.rooms ?? "—"}</td>
@@ -101,8 +99,13 @@ export function SalesListPage() {
               ))}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
+      </div>
     </PageShell>
   );
+}
+
+function fmtMonthYear(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("uk-UA", { month: "long", year: "numeric" }).format(date);
 }

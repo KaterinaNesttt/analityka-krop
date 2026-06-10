@@ -73,7 +73,7 @@ function normalizeHeader(header: string): string {
 export function ImportPage() {
   return (
     <PageShell>
-      <PageHeader title="Імпорт" description="Telegram-текст або CSV з Google Таблиць." />
+      <PageHeader title="Імпорт" />
       <Tabs defaultValue="telegram">
         <TabsList>
           <TabsTrigger value="telegram">Telegram-текст</TabsTrigger>

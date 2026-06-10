@@ -40,7 +40,7 @@ export function NewSalePage() {
 
   return (
     <PageShell>
-      <PageHeader title="Додати продаж" description="Запис буде відправлено на перевірку модератором." />
+      <PageHeader title="Додати продаж" />
       <form onSubmit={submit} className="space-y-4">
         <Card>
           <CardHeader><CardTitle className="text-base">Обовʼязкові поля</CardTitle></CardHeader>
@@ -51,7 +51,6 @@ export function NewSalePage() {
             <FieldNum label="Загальна площа, м² *" value={f.total_area} onChange={(v) => u("total_area", v)} required />
             <FieldNum label="Фінальна ціна *" value={f.final_price} onChange={(v) => u("final_price", v)} required />
             <FieldSelect label="Валюта *" value={f.currency} onValueChange={(v) => u("currency", v)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
-            <Field label="Дата продажу *"><Input type="date" required value={f.sale_date ?? ""} onChange={(e) => u("sale_date", e.target.value)} /></Field>
           </CardContent>
         </Card>
 
@@ -64,7 +63,7 @@ export function NewSalePage() {
             <Field label="Комунікації"><Input value={f.communications ?? ""} onChange={(e) => u("communications", e.target.value)} /></Field>
             <Field label="Зручності"><Input value={f.amenities ?? ""} onChange={(e) => u("amenities", e.target.value)} /></Field>
             <FieldSelect label="Стан ремонту" value={f.condition ?? ""} onValueChange={(v) => u("condition", v)} options={CONDITIONS.map((c) => ({ value: c, label: c }))} placeholder="—" />
-            <Field label="Тип"><Input value={f.building_type ?? ""} onChange={(e) => u("building_type", e.target.value)} /></Field>
+            <Field label="Тип будинку"><Input value={f.building_type ?? ""} onChange={(e) => u("building_type", e.target.value)} /></Field>
             <Field label="Меблі/техніка"><Input value={f.furniture ?? ""} onChange={(e) => u("furniture", e.target.value)} /></Field>
             <Field label="Термін"><Input value={f.sale_term ?? ""} onChange={(e) => u("sale_term", e.target.value)} /></Field>
             <FieldNum label="Початкова ціна" value={f.initial_price} onChange={(v) => u("initial_price", v)} />

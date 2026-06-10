@@ -19,7 +19,7 @@ export function UsersPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Користувачі" description="Тільки для адміністраторів." />
+      <PageHeader title="Користувачі" />
       <Card>
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-sm">

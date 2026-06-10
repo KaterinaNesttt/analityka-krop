@@ -53,7 +53,7 @@ export function SaleDetailPage() {
 
   return (
     <PageShell>
-      <PageHeader title={`${propertyTypeLabel(s.property_type)} — ${s.district}`} description={s.sale_term ?? undefined}>
+      <PageHeader title={`${propertyTypeLabel(s.property_type)} — ${s.district}`}>
         <Badge variant={s.status === "approved" ? "default" : "secondary"}>{statusLabel(s.status)}</Badge>
       </PageHeader>
 

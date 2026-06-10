@@ -64,10 +64,10 @@ export function DashboardPage() {
   if (sales.isLoading) {
     return (
       <PageShell>
-        <PageHeader title="Дашборд" description="Ринок житла за завантаженими CSV." />
+        <PageHeader title="Дашборд" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-32 rounded-lg border bg-card/70 animate-pulse" />
+            <div key={i} className="h-32 rounded-lg border bg-card/70" />
           ))}
         </div>
       </PageShell>
@@ -77,7 +77,7 @@ export function DashboardPage() {
   if (!data.total) {
     return (
       <PageShell>
-        <PageHeader title="Дашборд" description="Ринок житла за завантаженими CSV." />
+        <PageHeader title="Дашборд" />
         <Card>
           <CardContent className="p-10 text-center text-muted-foreground">Немає підтверджених продажів для аналізу.</CardContent>
         </Card>
@@ -87,7 +87,7 @@ export function DashboardPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Дашборд" description="" />
+      <PageHeader title="Дашборд" />
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <div className="rounded-lg border bg-[radial-gradient(circle_at_top_left,rgba(212,168,79,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 md:p-6 shadow-sm">

@@ -26,7 +26,7 @@ export function ModerationPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Модерація" description="Записи на перевірці.">
+      <PageHeader title="Модерація">
         <Select value={source} onValueChange={setSource}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent>
