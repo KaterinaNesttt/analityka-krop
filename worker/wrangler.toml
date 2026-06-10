@@ -4,11 +4,9 @@ compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
 # ---------------------------------------------------------------
-# 1. Створіть D1 базу:
-#    wrangler d1 create analityka-krop
-#    Підставте database_id нижче.
+
 # 2. Прогоніть міграції:
-#    wrangler d1 migrations apply analityka-krop --remote
+#    wrangler d1 migrations apply anal --remote
 # 3. Задайте секрети:
 #    wrangler secret put JWT_SECRET
 #    wrangler secret put JWT_REFRESH_SECRET
@@ -20,8 +18,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "analityka-krop"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_name = "anal"
+database_id = "ecc0b259-038d-4641-9c68-a7d934d89ac8"
 migrations_dir = "migrations"
 
 [vars]
