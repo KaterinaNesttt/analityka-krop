@@ -1,11 +1,17 @@
 {
-  "name": "Аналітика фактичних продажів Кропивницький",
-  "short_name": "Продажі",
-  "description": "PWA іконки для аналітики фактичних продажів нерухомості у Кропивницькому.",
+  "id": "/",
+  "name": "Аналітика Кроп — фактичні продажі нерухомості",
+  "short_name": "Аналітика Кроп",
+  "description": "Закрита аналітична платформа для агентів нерухомості м. Кропивницький.",
+  "lang": "uk-UA",
+  "dir": "ltr",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
