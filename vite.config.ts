@@ -8,7 +8,10 @@ export default defineConfig({
   server: {
     port: 8080,
     proxy: {
-      "/api": "http://localhost:8787",
+      "/api": {
+        target: "https://analityka-krop-api.roman-v-shkurenko.workers.dev",
+        changeOrigin: true,
+      },
     },
   },
   build: {
