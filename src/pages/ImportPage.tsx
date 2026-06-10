@@ -17,6 +17,7 @@ const FIELDS = [
   ["building_type", "Тип"],
   ["district", "Район *"],
   ["address_hint", "Орієнтир"],
+  ["characteristics", "Характеристика"],
   ["rooms", "Кімнат"],
   ["total_area", "Площа *"],
   ["land_area", "Земля"],
@@ -38,11 +39,14 @@ const FIELDS = [
 const HEADER_MAP: Record<string, string> = {
   "тип": "building_type",
   "район": "district",
+  "район/жк": "district",
   "к-ть кімнат": "rooms",
   "к-ть кiмнат": "rooms",
   "кімнат": "rooms",
   "кiмнат": "rooms",
   "площа": "total_area",
+  "поверх": "floor",
+  "характеристика": "characteristics",
   "земля": "land_area",
   "комунікації": "communications",
   "комунiкацiї": "communications",
@@ -53,10 +57,16 @@ const HEADER_MAP: Record<string, string> = {
   "меблi/технiка": "furniture",
   "термін": "sale_term",
   "термiн": "sale_term",
+  "термін продажу": "sale_term",
+  "термiн продажу": "sale_term",
   "ціна стартова": "initial_price",
   "цiна стартова": "initial_price",
+  "старт ціна": "initial_price",
+  "старт цiна": "initial_price",
   "ціна продаж": "final_price",
   "цiна продаж": "final_price",
+  "продаж ціна": "final_price",
+  "продаж цiна": "final_price",
   "коментар": "comment",
 };
 
@@ -211,12 +221,12 @@ function CsvImport() {
     if (!rows.length) { toast.error("Порожній файл"); return; }
     setHeaders(rows[0]); setCsvRows(rows.slice(1));
     const lowerName = f.name.toLowerCase();
-    if (lowerName.includes("буд")) setPropertyType("house");
-    else if (lowerName.includes("кварт")) setPropertyType("apartment");
+    const detectedType = lowerName.includes("буд") ? "house" : lowerName.includes("кварт") ? "apartment" : propertyType;
+    if (detectedType !== propertyType) setPropertyType(detectedType);
     const m: Record<string, string> = {};
     rows[0].forEach((h, idx) => {
       const key = normalizeHeader(h);
-      const field = key ? HEADER_MAP[key] : "comment_extra";
+      const field = key ? HEADER_MAP[key] : detectedType === "apartment" && idx === 0 ? "rooms" : "comment_extra";
       if (field && m[field] === undefined) m[field] = String(idx);
     });
     setMapping(m);
@@ -231,9 +241,10 @@ function CsvImport() {
           const idx = mapping[field];
           if (idx !== undefined && idx !== "") o[field] = r[Number(idx)]?.trim() || null;
         }
-        if (o.comment_extra) {
-          o.comment = [o.comment, o.comment_extra].filter(Boolean).join("\n");
+        if (o.characteristics || o.comment_extra) {
+          o.comment = [o.characteristics, o.comment, o.comment_extra].filter(Boolean).join("\n");
           delete o.comment_extra;
+          delete o.characteristics;
         }
         return o;
       });

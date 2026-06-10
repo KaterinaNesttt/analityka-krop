@@ -84,6 +84,22 @@ function rooms(v: unknown): number | null {
   return first ? Number(first[0]) : null;
 }
 
+function areaFromText(...values: unknown[]): number | null {
+  const text = values.map((v) => clean(v)).filter(Boolean).join(' ');
+  const matches = [...text.matchAll(/(\d+(?:[.,]\d+)?)\s*(?:м2|м²|кв\.?\s*м)/gi)];
+  if (!matches.length) return null;
+  return Number(matches[matches.length - 1][1].replace(',', '.'));
+}
+
+function floorParts(v: unknown): { floor: number | null; floors_total: number | null } {
+  const s = clean(v);
+  if (!s) return { floor: null, floors_total: null };
+  const pair = s.match(/(\d{1,2})\s*\/\s*(\d{1,2})/);
+  if (pair) return { floor: Number(pair[1]), floors_total: Number(pair[2]) };
+  const first = s.match(/\d{1,2}/);
+  return { floor: first ? Number(first[0]) : null, floors_total: null };
+}
+
 function inferSaleDate(fileName?: string): string {
   const year = clean(fileName)?.match(/\b(20\d{2})\b/)?.[1];
   return year ? `${year}-01-01` : new Date().toISOString().slice(0, 10);
@@ -98,20 +114,21 @@ function inferPropertyType(body: any, r: any): string {
 }
 
 function normalizeCsvRow(r: any, body: any): any {
-  const comment = [clean(r.comment), clean(r.comment_extra)].filter(Boolean).join('\n') || null;
+  const floor = floorParts(r.floor);
+  const comment = [clean(r.characteristics), clean(r.comment), clean(r.comment_extra)].filter(Boolean).join('\n') || null;
   return {
     property_type: inferPropertyType(body, r),
     district: clean(r.district),
     address_hint: clean(r.address_hint),
     rooms: rooms(r.rooms),
-    total_area: num(r.total_area),
+    total_area: num(r.total_area) ?? areaFromText(r.characteristics, r.comment),
     land_area: clean(r.land_area),
     communications: clean(r.communications),
     amenities: clean(r.amenities),
     living_area: num(r.living_area),
     kitchen_area: num(r.kitchen_area),
-    floor: num(r.floor),
-    floors_total: num(r.floors_total),
+    floor: num(r.floor) ?? floor.floor,
+    floors_total: num(r.floors_total) ?? floor.floors_total,
     building_type: clean(r.building_type),
     condition: clean(r.condition),
     furniture: clean(r.furniture),
