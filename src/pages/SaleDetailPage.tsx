@@ -5,7 +5,7 @@ import { PageHeader, PageShell, StatCard } from "@/components/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { fmtDate, fmtMoney, fmtArea, propertyTypeLabel, sourceLabel, statusLabel } from "@/lib/format";
+import { fmtDate, fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/lib/format";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
@@ -53,7 +53,7 @@ export function SaleDetailPage() {
 
   return (
     <PageShell>
-      <PageHeader title={`${propertyTypeLabel(s.property_type)} — ${s.district}`} description={s.address_hint ?? "Без адреси"}>
+      <PageHeader title={`${propertyTypeLabel(s.property_type)} — ${s.district}`} description={s.sale_term ?? undefined}>
         <Badge variant={s.status === "approved" ? "default" : "secondary"}>{statusLabel(s.status)}</Badge>
       </PageHeader>
 
@@ -71,8 +71,6 @@ export function SaleDetailPage() {
             <dl className="grid grid-cols-2 gap-y-2 text-sm">
               <dt className="text-muted-foreground">Кімнат</dt><dd>{s.rooms ?? "—"}</dd>
               <dt className="text-muted-foreground">Поверх</dt><dd>{s.floor ? `${s.floor}/${s.floors_total ?? "?"}` : "—"}</dd>
-              <dt className="text-muted-foreground">Житлова площа</dt><dd>{fmtArea(s.living_area)}</dd>
-              <dt className="text-muted-foreground">Кухня</dt><dd>{fmtArea(s.kitchen_area)}</dd>
               <dt className="text-muted-foreground">Тип</dt><dd>{s.building_type ?? "—"}</dd>
               <dt className="text-muted-foreground">Земля</dt><dd>{s.land_area ?? "—"}</dd>
               <dt className="text-muted-foreground">Комунікації</dt><dd>{s.communications ?? "—"}</dd>
@@ -80,13 +78,9 @@ export function SaleDetailPage() {
               <dt className="text-muted-foreground">Стан</dt><dd>{s.condition ?? "—"}</dd>
               <dt className="text-muted-foreground">Меблі/техніка</dt><dd>{s.furniture ?? "—"}</dd>
               <dt className="text-muted-foreground">Термін</dt><dd>{s.sale_term ?? "—"}</dd>
-              <dt className="text-muted-foreground">Рік побудови</dt><dd>{s.year_built ?? "—"}</dd>
-              <dt className="text-muted-foreground">Джерело</dt><dd>{sourceLabel(s.source_type)}</dd>
               <dt className="text-muted-foreground">Початкова ціна</dt><dd>{s.initial_price ? fmtMoney(s.initial_price, s.currency) : "—"}</dd>
-              <dt className="text-muted-foreground">Торг</dt><dd>{s.discount_percent != null ? `${Number(s.discount_percent).toFixed(1)}% (${fmtMoney(s.discount_amount, s.currency)})` : "—"}</dd>
             </dl>
             {s.comment && (<><div className="mt-4 text-xs text-muted-foreground">Коментар</div><div className="text-sm mt-1">{s.comment}</div></>)}
-            {s.listing_url && (<div className="mt-3"><a href={s.listing_url} target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm">Посилання на оголошення</a></div>)}
           </CardContent>
         </Card>
 
@@ -108,12 +102,6 @@ export function SaleDetailPage() {
               <Button variant="outline" onClick={() => moderate("duplicate")}>Дублікат</Button>
               {(user?.role === "superuser" || user?.role === "admin") && <Button variant="destructive" onClick={del}>Видалити</Button>}
             </CardContent>
-            {s.source_text && (
-              <CardContent>
-                <div className="text-xs text-muted-foreground mb-1">Сирий текст джерела</div>
-                <pre className="text-xs bg-muted p-3 rounded-md whitespace-pre-wrap">{s.source_text}</pre>
-              </CardContent>
-            )}
           </Card>
         )}
       </div>

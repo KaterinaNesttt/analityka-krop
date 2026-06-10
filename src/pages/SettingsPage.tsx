@@ -3,22 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth-context";
-import { api, API_BASE } from "@/lib/api";
-import { toast } from "sonner";
+import { API_BASE } from "@/lib/api";
 import { roleLabel } from "@/lib/format";
-import { Moon, Sun, Trash2 } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
 export function SettingsPage() {
   const { theme, set } = useTheme();
   const { user } = useAuth();
-
-  const deleteDemo = async () => {
-    if (!confirm("Видалити всі демо-записи?")) return;
-    try {
-      const r = await api<{ deleted: number }>("/api/sales/demo", { method: "DELETE" });
-      toast.success(`Видалено ${r.deleted} демо-записів`);
-    } catch (e: any) { toast.error(e.message); }
-  };
 
   return (
     <PageShell>
@@ -51,18 +42,6 @@ export function SettingsPage() {
             </p>
           </CardContent>
         </Card>
-
-        {(user?.role === "superuser" || user?.role === "admin") && (
-          <Card>
-            <CardHeader><CardTitle className="text-base text-destructive">Службові дії</CardTitle></CardHeader>
-            <CardContent>
-              <Button variant="destructive" onClick={deleteDemo}>
-                <Trash2 className="h-4 w-4 mr-2" />Очистити демо-дані
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">Видаляє всі записи з позначкою <code>is_demo = 1</code>.</p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </PageShell>
   );

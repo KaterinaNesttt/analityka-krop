@@ -17,7 +17,7 @@ async function fetchSales(req: Request, env: Env) {
   const { sql, params } = buildWhere(f, true); // analytics always uses approved
   const { results } = await env.DB.prepare(
     `SELECT property_type, district, rooms, total_area, final_price, currency, initial_price,
-            discount_percent, sale_date FROM sales${sql}`,
+            sale_date FROM sales${sql}`,
   ).bind(...params).all<any>();
   return results;
 }
@@ -35,7 +35,9 @@ export async function summary(req: Request, env: Env): Promise<Response> {
   const roomCounts: Record<string, number> = {};
   for (const r of rows) if (r.rooms) roomCounts[r.rooms] = (roomCounts[r.rooms] ?? 0) + 1;
   const topRooms = Object.entries(roomCounts).sort((a, b) => b[1] - a[1])[0];
-  const discounts = rows.filter((r: any) => r.discount_percent != null).map((r: any) => Number(r.discount_percent));
+  const discounts = rows
+    .filter((r: any) => r.initial_price != null && Number(r.initial_price) > 0)
+    .map((r: any) => ((Number(r.initial_price) - Number(r.final_price)) / Number(r.initial_price)) * 100);
   return json({
     total: rows.length,
     avg_price: avg(prices),
@@ -103,7 +105,9 @@ export async function byRooms(req: Request, env: Env): Promise<Response> {
 export async function discounts(req: Request, env: Env): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
   const rows = await fetchSales(req, env);
-  const ds = rows.filter((r: any) => r.discount_percent != null).map((r: any) => Number(r.discount_percent));
+  const ds = rows
+    .filter((r: any) => r.initial_price != null && Number(r.initial_price) > 0)
+    .map((r: any) => ((Number(r.initial_price) - Number(r.final_price)) / Number(r.initial_price)) * 100);
   const buckets = [0, 2, 5, 10, 15, 100];
   const labels = ['0-2%', '2-5%', '5-10%', '10-15%', '15%+'];
   const counts = labels.map(() => 0);

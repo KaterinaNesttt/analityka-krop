@@ -56,36 +56,32 @@ export function SalesListPage() {
                 <th className="text-left p-3">Дата</th>
                 <th className="text-left p-3">Тип</th>
                 <th className="text-left p-3">Район</th>
-                {mode === "detailed" && <th className="text-left p-3">Адреса</th>}
                 <th className="text-left p-3">Кімн.</th>
                 <th className="text-left p-3">Площа</th>
                 {mode === "detailed" && <th className="text-left p-3">Поверх</th>}
                 <th className="text-right p-3">Ціна</th>
                 <th className="text-right p-3">$/м²</th>
-                {mode === "detailed" && <th className="text-left p-3">Торг</th>}
                 {isStaff && <th className="text-left p-3">Статус</th>}
                 <th className="p-3"></th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
-                <tr><td colSpan={12} className="p-8 text-center text-muted-foreground">Завантаження…</td></tr>
+                <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Завантаження…</td></tr>
               )}
               {!isLoading && rows.length === 0 && (
-                <tr><td colSpan={12} className="p-8 text-center text-muted-foreground">Немає даних</td></tr>
+                <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Немає даних</td></tr>
               )}
               {rows.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-muted/30">
                   <td className="p-3 whitespace-nowrap">{fmtDate(r.sale_date)}</td>
                   <td className="p-3">{r.building_type ?? propertyTypeLabel(r.property_type)}</td>
                   <td className="p-3">{r.district}</td>
-                  {mode === "detailed" && <td className="p-3 text-muted-foreground">{r.address_hint ?? "—"}</td>}
                   <td className="p-3">{r.rooms ?? "—"}</td>
                   <td className="p-3">{fmtArea(r.total_area)}</td>
                   {mode === "detailed" && <td className="p-3">{r.floor ? `${r.floor}/${r.floors_total ?? "?"}` : "—"}</td>}
                   <td className="p-3 text-right font-medium">{fmtMoney(r.final_price, r.currency)}</td>
                   <td className="p-3 text-right">{r.total_area ? fmtMoney(r.final_price / r.total_area, r.currency) : "—"}</td>
-                  {mode === "detailed" && <td className="p-3 text-muted-foreground">{r.discount_percent != null ? `${Number(r.discount_percent).toFixed(1)}%` : "—"}</td>}
                   {isStaff && <td className="p-3"><Badge variant={r.status === "approved" ? "default" : "secondary"}>{statusLabel(r.status)}</Badge></td>}
                   <td className="p-3 text-right">
                     <Link to={`/sales/${r.id}`} className="text-primary hover:underline inline-flex items-center gap-1">

@@ -25,7 +25,6 @@ const routes: RouteDef[] = [
   // sales
   { method: 'GET',    pattern: /^\/api\/sales$/, handler: (r, e) => sales.listSales(r, e) },
   { method: 'POST',   pattern: /^\/api\/sales$/, handler: (r, e) => sales.createSale(r, e) },
-  { method: 'DELETE', pattern: /^\/api\/sales\/demo$/, handler: (r, e) => sales.deleteDemo(r, e) },
   { method: 'GET',    pattern: /^\/api\/sales\/([^/]+)$/, handler: (r, e, m) => sales.getSale(r, e, m[1]) },
   { method: 'PATCH',  pattern: /^\/api\/sales\/([^/]+)$/, handler: (r, e, m) => sales.updateSale(r, e, m[1]) },
   { method: 'PATCH',  pattern: /^\/api\/sales\/([^/]+)\/approve$/, handler: (r, e, m) => sales.changeStatus(r, e, m[1], 'approved') },

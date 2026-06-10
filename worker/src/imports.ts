@@ -49,7 +49,6 @@ export function parseTelegramText(text: string): Record<string, any> {
   else out.sale_date = new Date().toISOString().slice(0, 10);
 
   out.source_type = 'telegram';
-  out.source_text = text;
   return out;
 }
 
@@ -119,27 +118,22 @@ function normalizeCsvRow(r: any, body: any): any {
   return {
     property_type: inferPropertyType(body, r),
     district: clean(r.district),
-    address_hint: clean(r.address_hint),
     rooms: rooms(r.rooms),
     total_area: num(r.total_area) ?? areaFromText(r.characteristics, r.comment),
     land_area: clean(r.land_area),
     communications: clean(r.communications),
     amenities: clean(r.amenities),
-    living_area: num(r.living_area),
-    kitchen_area: num(r.kitchen_area),
     floor: num(r.floor) ?? floor.floor,
     floors_total: num(r.floors_total) ?? floor.floors_total,
     building_type: clean(r.building_type),
     condition: clean(r.condition),
     furniture: clean(r.furniture),
     sale_term: clean(r.sale_term),
-    year_built: num(r.year_built),
     initial_price: num(r.initial_price),
-    final_price: num(r.final_price),
+    final_price: num(r.final_price) ?? num(r.initial_price),
     currency: clean(r.currency) ?? 'USD',
     sale_date: clean(r.sale_date) ?? inferSaleDate(body?.file_name),
     source_type: clean(r.source_type) ?? 'csv',
-    listing_url: clean(r.listing_url),
     comment,
   };
 }
@@ -155,27 +149,24 @@ export async function importCsv(req: Request, env: Env): Promise<Response> {
   for (const raw of rows) {
     try {
       const r = normalizeCsvRow(raw, body);
-      if (!r.property_type || !r.district || !r.total_area || !r.final_price || !r.currency || !r.sale_date || !r.source_type) { errs++; continue; }
+      if (!r.property_type || !r.district || !r.final_price || !r.currency || !r.sale_date || !r.source_type) { errs++; continue; }
       // Дублікат: дата + район + кімнати + площа + ціна
       const existing = await env.DB.prepare(
-        'SELECT id FROM sales WHERE sale_date = ? AND district = ? AND total_area = ? AND final_price = ? AND (rooms IS ? OR rooms = ?)',
-      ).bind(r.sale_date, r.district, Number(r.total_area), Number(r.final_price), r.rooms ?? null, r.rooms ?? null).first();
+        'SELECT id FROM sales WHERE sale_date = ? AND district = ? AND (total_area IS ? OR total_area = ?) AND final_price = ? AND (rooms IS ? OR rooms = ?)',
+      ).bind(r.sale_date, r.district, r.total_area ?? null, r.total_area == null ? null : Number(r.total_area), Number(r.final_price), r.rooms ?? null, r.rooms ?? null).first();
       if (existing) { dup++; continue; }
       const id = uid();
       const ip = r.initial_price != null ? Number(r.initial_price) : null;
       const fp = Number(r.final_price);
-      const da = ip ? ip - fp : null;
-      const dp = ip && ip > 0 ? (da! / ip) * 100 : null;
       await env.DB.prepare(
-        `INSERT INTO sales (id, property_type, district, address_hint, rooms, total_area, land_area, communications, amenities, living_area, kitchen_area, floor, floors_total, building_type, condition, furniture, sale_term, year_built, initial_price, final_price, currency, discount_amount, discount_percent, sale_date, source_type, listing_url, comment, status, submitted_by, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO sales (id, property_type, district, rooms, total_area, land_area, communications, amenities, floor, floors_total, building_type, condition, furniture, sale_term, initial_price, final_price, currency, sale_date, source_type, comment, status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
-        id, r.property_type, r.district, r.address_hint ?? null, r.rooms ?? null,
-        Number(r.total_area), r.land_area ?? null, r.communications ?? null, r.amenities ?? null,
-        r.living_area ?? null, r.kitchen_area ?? null,
+        id, r.property_type, r.district, r.rooms ?? null,
+        r.total_area == null ? null : Number(r.total_area), r.land_area ?? null, r.communications ?? null, r.amenities ?? null,
         r.floor ?? null, r.floors_total ?? null, r.building_type ?? null, r.condition ?? null,
-        r.furniture ?? null, r.sale_term ?? null, r.year_built ?? null, ip, fp, r.currency, da, dp, r.sale_date, r.source_type,
-        r.listing_url ?? null, r.comment ?? null, wantStatus, u.id, now, now,
+        r.furniture ?? null, r.sale_term ?? null, ip, fp, r.currency, r.sale_date, r.source_type,
+        r.comment ?? null, wantStatus, now, now,
       ).run();
       created++;
     } catch { errs++; }

@@ -13,10 +13,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
 const FIELDS = [
-  ["sale_date", "Дата продажу"],
   ["building_type", "Тип"],
   ["district", "Район *"],
-  ["address_hint", "Орієнтир"],
   ["characteristics", "Характеристика"],
   ["rooms", "Кімнат"],
   ["total_area", "Площа *"],
@@ -30,8 +28,6 @@ const FIELDS = [
   ["sale_term", "Термін"],
   ["initial_price", "Початкова ціна"],
   ["final_price", "Фінальна ціна *"],
-  ["currency", "Валюта *"],
-  ["source_type", "Джерело *"],
   ["comment", "Коментар"],
   ["comment_extra", "Додатковий коментар"],
 ] as const;
@@ -168,7 +164,6 @@ function ParsedForm({ value, onChange }: { value: any; onChange: (v: any) => voi
       <Field label="Поверховість"><Input type="number" value={value.floors_total ?? ""} onChange={(e) => u("floors_total", Number(e.target.value) || null)} /></Field>
       <Field label="Ціна"><Input type="number" value={value.final_price ?? ""} onChange={(e) => u("final_price", Number(e.target.value) || null)} /></Field>
       <SmallSelect label="Валюта" v={value.currency ?? "USD"} on={(x) => u("currency", x)} opts={CURRENCIES.map((c) => ({ value: c, label: c }))} />
-      <Field label="Адреса"><Input value={value.address_hint ?? ""} onChange={(e) => u("address_hint", e.target.value)} /></Field>
       <Field label="Коментар"><Input value={value.comment ?? ""} onChange={(e) => u("comment", e.target.value)} /></Field>
     </div>
   );

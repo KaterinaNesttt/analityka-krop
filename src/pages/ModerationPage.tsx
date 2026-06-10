@@ -58,14 +58,8 @@ export function ModerationPage() {
                   {propertyTypeLabel(r.property_type)} · {r.district} · {r.rooms ?? "?"}-к · {fmtArea(r.total_area)} · {fmtMoney(r.final_price, r.currency)}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">
-                  {r.address_hint ?? "Без адреси"} · продано {fmtDate(r.sale_date)}
+                  Продано {fmtDate(r.sale_date)}
                 </div>
-                {r.source_text && (
-                  <details className="mt-2">
-                    <summary className="text-xs text-muted-foreground cursor-pointer">Сирий текст</summary>
-                    <pre className="text-xs bg-muted p-2 rounded mt-1 whitespace-pre-wrap">{r.source_text}</pre>
-                  </details>
-                )}
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link to={`/sales/${r.id}`}><Button size="sm" variant="outline">Деталі</Button></Link>

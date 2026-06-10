@@ -1,21 +1,11 @@
-import type { Env, AuthUser } from './types';
+import type { Env } from './types';
 import { json, err, uid, nowIso } from './utils';
-import { requireApproved, requireRole, getAuth } from './middleware';
+import { requireApproved, requireRole } from './middleware';
 
-// Поля, безпечні для user (без submitted_by / reviewed_by)
-const PUBLIC_FIELDS = `id, property_type, district, address_hint, rooms, total_area, living_area, kitchen_area,
+const PUBLIC_FIELDS = `id, property_type, district, rooms, total_area,
   floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
-  year_built, initial_price, final_price, currency,
-  discount_amount, discount_percent, sale_date, source_type, listing_url, comment, status, is_demo, created_at`;
-const STAFF_FIELDS = PUBLIC_FIELDS + ', source_text, submitted_by, reviewed_by, reviewed_at, updated_at';
-
-function stripForUser<T extends Record<string, any>>(row: T): T {
-  const r: any = { ...row };
-  delete r.submitted_by;
-  delete r.reviewed_by;
-  delete r.source_text;
-  return r;
-}
+  initial_price, final_price, currency, sale_date, source_type, comment, status, created_at`;
+const STAFF_FIELDS = PUBLIC_FIELDS + ', updated_at';
 
 export interface SaleFilters {
   date_from?: string; date_to?: string; district?: string; property_type?: string;
@@ -80,7 +70,7 @@ export async function listSales(req: Request, env: Env): Promise<Response> {
   const orderBy = sortMap[sort] ?? 'sale_date DESC';
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '200', 10), 1000);
   const { results } = await env.DB.prepare(`SELECT ${fields} FROM sales${sql} ORDER BY ${orderBy} LIMIT ?`).bind(...params, limit).all();
-  return json({ sales: forUser ? results.map(stripForUser as any) : results }, {}, env, req);
+  return json({ sales: results }, {}, env, req);
 }
 
 export async function getSale(req: Request, env: Env, id: string): Promise<Response> {
@@ -90,40 +80,33 @@ export async function getSale(req: Request, env: Env, id: string): Promise<Respo
   const row = await env.DB.prepare(`SELECT ${fields} FROM sales WHERE id = ?`).bind(id).first<any>();
   if (!row) return err(404, 'Не знайдено', env, req);
   if (forUser && row.status !== 'approved') return err(404, 'Не знайдено', env, req);
-  return json({ sale: forUser ? stripForUser(row) : row }, {}, env, req);
+  return json({ sale: row }, {}, env, req);
 }
 
 export async function createSale(req: Request, env: Env): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
   if (!body) return err(400, 'Невірні дані', env, req);
-  const required = ['property_type', 'district', 'total_area', 'final_price', 'currency', 'sale_date', 'source_type'];
+  const required = ['property_type', 'district', 'final_price', 'currency', 'sale_date', 'source_type'];
   for (const k of required) if (body[k] === undefined || body[k] === null || body[k] === '') return err(400, `Поле "${k}" обовʼязкове`, env, req);
   const id = uid(); const now = nowIso();
-  const initialPrice = body.initial_price ?? null;
   const finalPrice = Number(body.final_price);
-  const discountAmount = initialPrice ? Number(initialPrice) - finalPrice : null;
-  const discountPercent = initialPrice && Number(initialPrice) > 0 ? (discountAmount! / Number(initialPrice)) * 100 : null;
+  const initialPrice = body.initial_price ?? null;
   // staff can set status; user always pending
   let status = 'pending';
   if (u.role !== 'user' && ['pending', 'approved'].includes(body.status)) status = body.status;
   await env.DB.prepare(
-    `INSERT INTO sales (id, property_type, district, address_hint, rooms, total_area, living_area, kitchen_area,
+    `INSERT INTO sales (id, property_type, district, rooms, total_area,
       floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
-      year_built, initial_price, final_price, currency,
-      discount_amount, discount_percent, sale_date, source_type, source_text, listing_url, comment, status,
-      submitted_by, reviewed_by, reviewed_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      initial_price, final_price, currency, sale_date, source_type, comment, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
-    id, body.property_type, body.district, body.address_hint ?? null, body.rooms ?? null,
-    Number(body.total_area), body.living_area ?? null, body.kitchen_area ?? null,
+    id, body.property_type, body.district, body.rooms ?? null, body.total_area == null ? null : Number(body.total_area),
     body.floor ?? null, body.floors_total ?? null, body.building_type ?? null,
     body.land_area ?? null, body.communications ?? null, body.amenities ?? null,
     body.condition ?? null, body.furniture ?? null, body.sale_term ?? null,
-    body.year_built ?? null, initialPrice, finalPrice, body.currency,
-    discountAmount, discountPercent, body.sale_date, body.source_type,
-    body.source_text ?? null, body.listing_url ?? null, body.comment ?? null, status,
-    u.id, status === 'approved' ? u.id : null, status === 'approved' ? now : null, now, now,
+    initialPrice, finalPrice, body.currency, body.sale_date, body.source_type,
+    body.comment ?? null, status, now, now,
   ).run();
   return json({ id, status, message: 'Дані відправлено на перевірку' }, { status: 201 }, env, req);
 }
@@ -132,22 +115,10 @@ export async function updateSale(req: Request, env: Env, id: string): Promise<Re
   const u = await requireRole(req, env, ['admin', 'moderator']); if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
   if (!body) return err(400, 'Невірні дані', env, req);
-  const fields = ['property_type','district','address_hint','rooms','total_area','living_area','kitchen_area','floor','floors_total','building_type','land_area','communications','amenities','condition','furniture','sale_term','year_built','initial_price','final_price','currency','sale_date','source_type','listing_url','comment'];
+  const fields = ['property_type','district','rooms','total_area','floor','floors_total','building_type','land_area','communications','amenities','condition','furniture','sale_term','initial_price','final_price','currency','sale_date','source_type','comment'];
   const sets: string[] = []; const params: any[] = [];
   for (const f of fields) if (body[f] !== undefined) { sets.push(`${f} = ?`); params.push(body[f]); }
   if (!sets.length) return err(400, 'Немає полів для оновлення', env, req);
-  // Перерахувати знижку
-  if (body.initial_price !== undefined || body.final_price !== undefined) {
-    const cur = await env.DB.prepare('SELECT initial_price, final_price FROM sales WHERE id = ?').bind(id).first<{ initial_price: number | null; final_price: number }>();
-    if (cur) {
-      const ip = body.initial_price ?? cur.initial_price;
-      const fp = body.final_price ?? cur.final_price;
-      if (ip && Number(ip) > 0) {
-        sets.push('discount_amount = ?'); params.push(Number(ip) - Number(fp));
-        sets.push('discount_percent = ?'); params.push(((Number(ip) - Number(fp)) / Number(ip)) * 100);
-      }
-    }
-  }
   sets.push('updated_at = ?'); params.push(nowIso());
   params.push(id);
   await env.DB.prepare(`UPDATE sales SET ${sets.join(', ')} WHERE id = ?`).bind(...params).run();
@@ -157,8 +128,8 @@ export async function updateSale(req: Request, env: Env, id: string): Promise<Re
 export async function changeStatus(req: Request, env: Env, id: string, status: 'approved' | 'rejected' | 'duplicate'): Promise<Response> {
   const u = await requireRole(req, env, ['admin', 'moderator']); if (u instanceof Response) return u;
   const now = nowIso();
-  await env.DB.prepare('UPDATE sales SET status = ?, reviewed_by = ?, reviewed_at = ?, updated_at = ? WHERE id = ?')
-    .bind(status, u.id, now, now, id).run();
+  await env.DB.prepare('UPDATE sales SET status = ?, updated_at = ? WHERE id = ?')
+    .bind(status, now, id).run();
   return json({ ok: true, status }, {}, env, req);
 }
 
@@ -166,10 +137,4 @@ export async function deleteSale(req: Request, env: Env, id: string): Promise<Re
   const u = await requireRole(req, env, ['admin']); if (u instanceof Response) return u;
   await env.DB.prepare('DELETE FROM sales WHERE id = ?').bind(id).run();
   return json({ ok: true }, {}, env, req);
-}
-
-export async function deleteDemo(req: Request, env: Env): Promise<Response> {
-  const u = await requireRole(req, env, ['admin']); if (u instanceof Response) return u;
-  const r = await env.DB.prepare('DELETE FROM sales WHERE is_demo = 1').run();
-  return json({ ok: true, deleted: r.meta?.changes ?? 0 }, {}, env, req);
 }

@@ -27,7 +27,7 @@ export function NewSalePage() {
     setBusy(true);
     try {
       const payload: any = { ...f };
-      ["rooms", "total_area", "living_area", "kitchen_area", "floor", "floors_total", "year_built", "initial_price", "final_price"].forEach((k) => {
+      ["rooms", "total_area", "floor", "floors_total", "initial_price", "final_price"].forEach((k) => {
         if (payload[k] === "" || payload[k] == null) delete payload[k]; else payload[k] = Number(payload[k]);
       });
       await api("/api/sales", { method: "POST", body: payload });
@@ -59,16 +59,16 @@ export function NewSalePage() {
         <Card>
           <CardHeader><CardTitle className="text-base">Додаткові поля</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="Вулиця або орієнтир"><Input value={f.address_hint ?? ""} onChange={(e) => u("address_hint", e.target.value)} /></Field>
             <FieldNum label="Поверх" value={f.floor} onChange={(v) => u("floor", v)} />
             <FieldNum label="Поверховість" value={f.floors_total} onChange={(v) => u("floors_total", v)} />
-            <FieldNum label="Житлова площа" value={f.living_area} onChange={(v) => u("living_area", v)} />
-            <FieldNum label="Площа кухні" value={f.kitchen_area} onChange={(v) => u("kitchen_area", v)} />
+            <Field label="Земля"><Input value={f.land_area ?? ""} onChange={(e) => u("land_area", e.target.value)} /></Field>
+            <Field label="Комунікації"><Input value={f.communications ?? ""} onChange={(e) => u("communications", e.target.value)} /></Field>
+            <Field label="Зручності"><Input value={f.amenities ?? ""} onChange={(e) => u("amenities", e.target.value)} /></Field>
             <FieldSelect label="Стан ремонту" value={f.condition ?? ""} onValueChange={(v) => u("condition", v)} options={CONDITIONS.map((c) => ({ value: c, label: c }))} placeholder="—" />
-            <Field label="Тип будинку"><Input value={f.building_type ?? ""} onChange={(e) => u("building_type", e.target.value)} placeholder="цегла / панель / новобудова" /></Field>
-            <FieldNum label="Рік побудови" value={f.year_built} onChange={(v) => u("year_built", v)} />
-            <FieldNum label="Початкова ціна (для торгу)" value={f.initial_price} onChange={(v) => u("initial_price", v)} />
-            <Field label="Посилання на оголошення"><Input value={f.listing_url ?? ""} onChange={(e) => u("listing_url", e.target.value)} /></Field>
+            <Field label="Тип"><Input value={f.building_type ?? ""} onChange={(e) => u("building_type", e.target.value)} /></Field>
+            <Field label="Меблі/техніка"><Input value={f.furniture ?? ""} onChange={(e) => u("furniture", e.target.value)} /></Field>
+            <Field label="Термін"><Input value={f.sale_term ?? ""} onChange={(e) => u("sale_term", e.target.value)} /></Field>
+            <FieldNum label="Початкова ціна" value={f.initial_price} onChange={(v) => u("initial_price", v)} />
             <Field label="Короткий коментар" className="md:col-span-3">
               <Textarea value={f.comment ?? ""} onChange={(e) => u("comment", e.target.value)} rows={3} />
             </Field>
