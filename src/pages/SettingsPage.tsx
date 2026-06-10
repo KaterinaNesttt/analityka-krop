@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth-context";
-import { roleLabel, statusLabel } from "@/lib/format";
+import { statusLabel } from "@/lib/format";
 import { Moon, Sun } from "lucide-react";
 
 export function SettingsPage() {
@@ -26,7 +26,6 @@ export function SettingsPage() {
           <CardHeader><CardTitle className="text-base">Профіль</CardTitle></CardHeader>
           <CardContent className="space-y-1 text-sm">
             <div><span className="text-muted-foreground">Email: </span>{user?.email}</div>
-            <div><span className="text-muted-foreground">Роль: </span>{roleLabel(user?.role ?? "")}</div>
             <div><span className="text-muted-foreground">Статус: </span>{statusLabel(user?.status ?? "")}</div>
             <p className="text-xs text-muted-foreground pt-2">Ваше імʼя та email не показуються іншим користувачам платформи.</p>
           </CardContent>

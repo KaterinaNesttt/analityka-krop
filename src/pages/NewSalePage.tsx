@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DISTRICTS, PROPERTY_TYPES, CURRENCIES, CONDITIONS, SOURCE_TYPES } from "@/components/filters-bar";
+import { DISTRICTS, PROPERTY_TYPES, CURRENCIES, CONDITIONS } from "@/components/filters-bar";
 import { toast } from "sonner";
 
 export function NewSalePage() {
@@ -52,7 +52,6 @@ export function NewSalePage() {
             <FieldNum label="Фінальна ціна *" value={f.final_price} onChange={(v) => u("final_price", v)} required />
             <FieldSelect label="Валюта *" value={f.currency} onValueChange={(v) => u("currency", v)} options={CURRENCIES.map((c) => ({ value: c, label: c }))} />
             <Field label="Дата продажу *"><Input type="date" required value={f.sale_date ?? ""} onChange={(e) => u("sale_date", e.target.value)} /></Field>
-            <FieldSelect label="Джерело *" value={f.source_type} onValueChange={(v) => u("source_type", v)} options={SOURCE_TYPES.map((s) => ({ value: s.value, label: s.label }))} />
           </CardContent>
         </Card>
 
