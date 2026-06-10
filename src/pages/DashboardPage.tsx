@@ -87,7 +87,7 @@ export function DashboardPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Дашборд" description="Будинки 2025 та квартири 2026 у єдиному огляді." />
+      <PageHeader title="Дашборд" description="" />
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <div className="rounded-lg border bg-[radial-gradient(circle_at_top_left,rgba(212,168,79,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 md:p-6 shadow-sm">
