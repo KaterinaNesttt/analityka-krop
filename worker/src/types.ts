@@ -2,12 +2,10 @@ export interface Env {
   DB: D1Database;
   JWT_SECRET: string;
   JWT_REFRESH_SECRET: string;
-  ADMIN_BOOTSTRAP_EMAIL?: string;
-  ADMIN_BOOTSTRAP_PASSWORD?: string;
   ALLOWED_ORIGIN: string;
 }
 
-export type Role = 'admin' | 'moderator' | 'user';
+export type Role = 'superuser' | 'admin' | 'moderator' | 'user';
 export type UserStatus = 'pending' | 'approved' | 'blocked';
 export type SaleStatus = 'pending' | 'approved' | 'rejected' | 'duplicate';
 

@@ -92,7 +92,7 @@ export async function api<T = any>(path: string, opts: ReqOpts = {}): Promise<T>
   }
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j.error ?? msg; } catch {}
+    try { const j = await res.json(); msg = j.error ?? msg; } catch { msg = `HTTP ${res.status}`; }
     throw new ApiError(res.status, msg);
   }
   if (res.status === 204) return undefined as T;

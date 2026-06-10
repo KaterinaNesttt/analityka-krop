@@ -30,6 +30,7 @@ export async function requireApproved(req: Request, env: Env): Promise<AuthUser 
 export async function requireRole(req: Request, env: Env, roles: Role[]): Promise<AuthUser | Response> {
   const u = await requireApproved(req, env);
   if (u instanceof Response) return u;
+  if (u.role === 'superuser') return u;
   if (!roles.includes(u.role)) return err(403, 'Недостатньо прав', env, req);
   return u;
 }

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -12,13 +12,9 @@ import { fmtDate, fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/li
 import { ExternalLink, LayoutGrid, List } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
-export const Route = createFileRoute("/_authenticated/sales")({
-  component: SalesList,
-});
-
-function SalesList() {
+export function SalesListPage() {
   const { user } = useAuth();
-  const isStaff = user?.role === "admin" || user?.role === "moderator";
+  const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const [filters, setFilters] = useState<SalesFilters>({});
   const [sort, setSort] = useState("sale_date_desc");
   const [mode, setMode] = useState<"compact" | "detailed">("compact");
@@ -81,7 +77,7 @@ function SalesList() {
               {rows.map((r) => (
                 <tr key={r.id} className="border-t hover:bg-muted/30">
                   <td className="p-3 whitespace-nowrap">{fmtDate(r.sale_date)}</td>
-                  <td className="p-3">{propertyTypeLabel(r.property_type)}</td>
+                  <td className="p-3">{r.building_type ?? propertyTypeLabel(r.property_type)}</td>
                   <td className="p-3">{r.district}</td>
                   {mode === "detailed" && <td className="p-3 text-muted-foreground">{r.address_hint ?? "—"}</td>}
                   <td className="p-3">{r.rooms ?? "—"}</td>
@@ -92,7 +88,7 @@ function SalesList() {
                   {mode === "detailed" && <td className="p-3 text-muted-foreground">{r.discount_percent != null ? `${Number(r.discount_percent).toFixed(1)}%` : "—"}</td>}
                   {isStaff && <td className="p-3"><Badge variant={r.status === "approved" ? "default" : "secondary"}>{statusLabel(r.status)}</Badge></td>}
                   <td className="p-3 text-right">
-                    <Link to="/sales/$id" params={{ id: r.id }} className="text-primary hover:underline inline-flex items-center gap-1">
+                    <Link to={`/sales/${r.id}`} className="text-primary hover:underline inline-flex items-center gap-1">
                       Деталі <ExternalLink className="h-3 w-3" />
                     </Link>
                   </td>

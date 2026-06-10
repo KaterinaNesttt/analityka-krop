@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Аналітика Кроп — фактичні продажі нерухомості</title>
+    <meta name="description" content="Закрита аналітична платформа для агентів нерухомості м. Кропивницький." />
+    <script>
+      (() => {
+        try {
+          var t = localStorage.getItem('ak.theme');
+          if (!t) t = 'dark';
+          if (t === 'dark') document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

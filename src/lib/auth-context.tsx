@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { api, clearTokens, getAccess, setTokens } from './api';
 
-export type Role = 'admin' | 'moderator' | 'user';
+export type Role = 'superuser' | 'admin' | 'moderator' | 'user';
 export type UserStatus = 'pending' | 'approved' | 'blocked';
 
 export interface AuthUser {
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     const rt = localStorage.getItem('ak.refresh');
-    try { await api('/api/auth/logout', { method: 'POST', body: { refresh: rt }, auth: false }); } catch {}
+    try { await api('/api/auth/logout', { method: 'POST', body: { refresh: rt }, auth: false }); } catch { setApiUnreachable(true); }
     clearTokens();
     setUser(null);
   };

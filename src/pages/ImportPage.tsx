@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
@@ -9,32 +8,63 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DISTRICTS, PROPERTY_TYPES, CURRENCIES, SOURCE_TYPES } from "@/components/filters-bar";
+import { DISTRICTS, PROPERTY_TYPES, CURRENCIES } from "@/components/filters-bar";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
-export const Route = createFileRoute("/_authenticated/import")({
-  component: ImportPage,
-});
-
 const FIELDS = [
-  ["sale_date", "Дата продажу *"],
-  ["property_type", "Тип *"],
+  ["sale_date", "Дата продажу"],
+  ["building_type", "Тип"],
   ["district", "Район *"],
   ["address_hint", "Орієнтир"],
   ["rooms", "Кімнат"],
   ["total_area", "Площа *"],
+  ["land_area", "Земля"],
+  ["communications", "Комунікації"],
+  ["amenities", "Зручності"],
   ["floor", "Поверх"],
   ["floors_total", "Поверховість"],
   ["condition", "Стан"],
+  ["furniture", "Меблі/техніка"],
+  ["sale_term", "Термін"],
   ["initial_price", "Початкова ціна"],
   ["final_price", "Фінальна ціна *"],
   ["currency", "Валюта *"],
   ["source_type", "Джерело *"],
   ["comment", "Коментар"],
+  ["comment_extra", "Додатковий коментар"],
 ] as const;
 
-function ImportPage() {
+const HEADER_MAP: Record<string, string> = {
+  "тип": "building_type",
+  "район": "district",
+  "к-ть кімнат": "rooms",
+  "к-ть кiмнат": "rooms",
+  "кімнат": "rooms",
+  "кiмнат": "rooms",
+  "площа": "total_area",
+  "земля": "land_area",
+  "комунікації": "communications",
+  "комунiкацiї": "communications",
+  "зручності": "amenities",
+  "зручностi": "amenities",
+  "стан": "condition",
+  "меблі/техніка": "furniture",
+  "меблi/технiка": "furniture",
+  "термін": "sale_term",
+  "термiн": "sale_term",
+  "ціна стартова": "initial_price",
+  "цiна стартова": "initial_price",
+  "ціна продаж": "final_price",
+  "цiна продаж": "final_price",
+  "коментар": "comment",
+};
+
+function normalizeHeader(header: string): string {
+  return header.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+export function ImportPage() {
   return (
     <PageShell>
       <PageHeader title="Імпорт" description="Telegram-текст або CSV з Google Таблиць." />
@@ -52,7 +82,7 @@ function ImportPage() {
 
 function TelegramImport() {
   const { user } = useAuth();
-  const isStaff = user?.role === "admin" || user?.role === "moderator";
+  const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState<any | null>(null);
   const [busy, setBusy] = useState(false);
@@ -141,8 +171,6 @@ function SmallSelect({ label, v, on, opts }: { label: string; v: string; on: (v:
   return <Field label={label}><Select value={v || undefined} onValueChange={on}><SelectTrigger><SelectValue placeholder="—" /></SelectTrigger><SelectContent>{opts.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></Field>;
 }
 
-// ---------------- CSV ----------------
-
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let cur: string[] = []; let buf = ""; let inQuotes = false;
@@ -167,11 +195,12 @@ function parseCsv(text: string): string[][] {
 
 function CsvImport() {
   const { user } = useAuth();
-  const isStaff = user?.role === "admin" || user?.role === "moderator";
+  const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const [csvRows, setCsvRows] = useState<string[][]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [fileName, setFileName] = useState("");
+  const [propertyType, setPropertyType] = useState<"auto" | "house" | "apartment">("auto");
   const [status, setStatus] = useState<"pending" | "approved">("pending");
   const [busy, setBusy] = useState(false);
 
@@ -181,12 +210,15 @@ function CsvImport() {
     const rows = parseCsv(text);
     if (!rows.length) { toast.error("Порожній файл"); return; }
     setHeaders(rows[0]); setCsvRows(rows.slice(1));
-    // авто-мапінг за збігом імен
+    const lowerName = f.name.toLowerCase();
+    if (lowerName.includes("буд")) setPropertyType("house");
+    else if (lowerName.includes("кварт")) setPropertyType("apartment");
     const m: Record<string, string> = {};
-    for (const [field] of FIELDS) {
-      const idx = rows[0].findIndex((h) => h.toLowerCase().trim() === field);
-      if (idx >= 0) m[field] = String(idx);
-    }
+    rows[0].forEach((h, idx) => {
+      const key = normalizeHeader(h);
+      const field = key ? HEADER_MAP[key] : "comment_extra";
+      if (field && m[field] === undefined) m[field] = String(idx);
+    });
     setMapping(m);
   };
 
@@ -199,11 +231,23 @@ function CsvImport() {
           const idx = mapping[field];
           if (idx !== undefined && idx !== "") o[field] = r[Number(idx)]?.trim() || null;
         }
+        if (o.comment_extra) {
+          o.comment = [o.comment, o.comment_extra].filter(Boolean).join("\n");
+          delete o.comment_extra;
+        }
         return o;
       });
       const r = await api<{ total: number; created: number; duplicates: number; errors: number }>(
         "/api/import/csv",
-        { method: "POST", body: { rows: items, file_name: fileName, status: isStaff ? status : undefined } },
+        {
+          method: "POST",
+          body: {
+            rows: items,
+            file_name: fileName,
+            property_type: propertyType === "auto" ? undefined : propertyType,
+            status: isStaff ? status : undefined,
+          },
+        },
       );
       toast.success(`Створено: ${r.created}, дублікатів: ${r.duplicates}, помилок: ${r.errors}`);
       setCsvRows([]); setHeaders([]); setMapping({});
@@ -214,7 +258,15 @@ function CsvImport() {
     <div className="space-y-4">
       <Card>
         <CardHeader><CardTitle className="text-base">CSV з Google Таблиць</CardTitle><CardDescription>Файл → Завантажити → Значення, розділені комами (.csv)</CardDescription></CardHeader>
-        <CardContent>
+        <CardContent className="grid gap-3 md:grid-cols-[220px_1fr]">
+          <Select value={propertyType} onValueChange={(v) => setPropertyType(v as any)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Авто з назви файлу</SelectItem>
+              <SelectItem value="house">Будинки</SelectItem>
+              <SelectItem value="apartment">Квартири</SelectItem>
+            </SelectContent>
+          </Select>
           <Input type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
         </CardContent>
       </Card>

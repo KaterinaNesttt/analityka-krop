@@ -4,7 +4,8 @@ import { requireApproved, requireRole, getAuth } from './middleware';
 
 // Поля, безпечні для user (без submitted_by / reviewed_by)
 const PUBLIC_FIELDS = `id, property_type, district, address_hint, rooms, total_area, living_area, kitchen_area,
-  floor, floors_total, building_type, condition, year_built, initial_price, final_price, currency,
+  floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
+  year_built, initial_price, final_price, currency,
   discount_amount, discount_percent, sale_date, source_type, listing_url, comment, status, is_demo, created_at`;
 const STAFF_FIELDS = PUBLIC_FIELDS + ', source_text, submitted_by, reviewed_by, reviewed_at, updated_at';
 
@@ -108,14 +109,17 @@ export async function createSale(req: Request, env: Env): Promise<Response> {
   if (u.role !== 'user' && ['pending', 'approved'].includes(body.status)) status = body.status;
   await env.DB.prepare(
     `INSERT INTO sales (id, property_type, district, address_hint, rooms, total_area, living_area, kitchen_area,
-      floor, floors_total, building_type, condition, year_built, initial_price, final_price, currency,
+      floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
+      year_built, initial_price, final_price, currency,
       discount_amount, discount_percent, sale_date, source_type, source_text, listing_url, comment, status,
       submitted_by, reviewed_by, reviewed_at, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     id, body.property_type, body.district, body.address_hint ?? null, body.rooms ?? null,
     Number(body.total_area), body.living_area ?? null, body.kitchen_area ?? null,
-    body.floor ?? null, body.floors_total ?? null, body.building_type ?? null, body.condition ?? null,
+    body.floor ?? null, body.floors_total ?? null, body.building_type ?? null,
+    body.land_area ?? null, body.communications ?? null, body.amenities ?? null,
+    body.condition ?? null, body.furniture ?? null, body.sale_term ?? null,
     body.year_built ?? null, initialPrice, finalPrice, body.currency,
     discountAmount, discountPercent, body.sale_date, body.source_type,
     body.source_text ?? null, body.listing_url ?? null, body.comment ?? null, status,
@@ -128,7 +132,7 @@ export async function updateSale(req: Request, env: Env, id: string): Promise<Re
   const u = await requireRole(req, env, ['admin', 'moderator']); if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
   if (!body) return err(400, 'Невірні дані', env, req);
-  const fields = ['property_type','district','address_hint','rooms','total_area','living_area','kitchen_area','floor','floors_total','building_type','condition','year_built','initial_price','final_price','currency','sale_date','source_type','listing_url','comment'];
+  const fields = ['property_type','district','address_hint','rooms','total_area','living_area','kitchen_area','floor','floors_total','building_type','land_area','communications','amenities','condition','furniture','sale_term','year_built','initial_price','final_price','currency','sale_date','source_type','listing_url','comment'];
   const sets: string[] = []; const params: any[] = [];
   for (const f of fields) if (body[f] !== undefined) { sets.push(`${f} = ?`); params.push(body[f]); }
   if (!sets.length) return err(400, 'Немає полів для оновлення', env, req);

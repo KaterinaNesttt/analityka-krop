@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell, StatCard } from "@/components/page-shell";
@@ -7,11 +6,7 @@ import { TrendingUp, Home, Calendar, Percent, Activity, Building } from "lucide-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, BarChart, Bar } from "recharts";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
-  component: Dashboard,
-});
-
-function Dashboard() {
+export function DashboardPage() {
   const summary = useQuery({ queryKey: ["summary"], queryFn: () => api<any>("/api/analytics/summary") });
   const dyn = useQuery({ queryKey: ["dyn"], queryFn: () => api<any>("/api/analytics/price-dynamics") });
   const districts = useQuery({ queryKey: ["d"], queryFn: () => api<any>("/api/analytics/districts") });

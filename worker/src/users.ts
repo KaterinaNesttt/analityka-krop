@@ -24,7 +24,10 @@ export async function setRole(req: Request, env: Env, id: string): Promise<Respo
   if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
   const role = body?.role;
-  if (!['admin', 'moderator', 'user'].includes(role)) return err(400, 'Невірна роль', env, req);
+  if (!['superuser', 'admin', 'moderator', 'user'].includes(role)) return err(400, 'Невірна роль', env, req);
+  const target = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(id).first<{ role: string }>();
+  if (!target) return err(404, 'Користувача не знайдено', env, req);
+  if ((role === 'superuser' || target.role === 'superuser') && u.role !== 'superuser') return err(403, 'Недостатньо прав', env, req);
   await env.DB.prepare('UPDATE users SET role = ?, updated_at = ? WHERE id = ?').bind(role, nowIso(), id).run();
   await audit(env, u.id, 'user.role', 'user', id, JSON.stringify({ role }));
   return json({ ok: true }, {}, env, req);
@@ -33,6 +36,9 @@ export async function setRole(req: Request, env: Env, id: string): Promise<Respo
 export async function blockUser(req: Request, env: Env, id: string): Promise<Response> {
   const u = await requireRole(req, env, ['admin']);
   if (u instanceof Response) return u;
+  const target = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(id).first<{ role: string }>();
+  if (!target) return err(404, 'Користувача не знайдено', env, req);
+  if (target.role === 'superuser' && u.role !== 'superuser') return err(403, 'Недостатньо прав', env, req);
   const body = await req.json().catch(() => ({})) as any;
   const status = body?.unblock ? 'approved' : 'blocked';
   await env.DB.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').bind(status, nowIso(), id).run();

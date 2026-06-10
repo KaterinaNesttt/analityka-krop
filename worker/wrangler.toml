@@ -10,8 +10,6 @@ compatibility_flags = ["nodejs_compat"]
 # 3. Задайте секрети:
 #    wrangler secret put JWT_SECRET
 #    wrangler secret put JWT_REFRESH_SECRET
-#    wrangler secret put ADMIN_BOOTSTRAP_EMAIL
-#    wrangler secret put ADMIN_BOOTSTRAP_PASSWORD
 # 4. Деплой:
 #    wrangler deploy
 # ---------------------------------------------------------------
@@ -24,4 +22,4 @@ migrations_dir = "migrations"
 
 [vars]
 # Дозволений origin фронтенду (поставте URL Pages після деплою)
-ALLOWED_ORIGIN = "*"
+ALLOWED_ORIGIN = "https://analityka-krop.pages.dev"

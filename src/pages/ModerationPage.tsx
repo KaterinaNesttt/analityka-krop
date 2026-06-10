@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
@@ -10,11 +10,7 @@ import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/moderation")({
-  component: ModerationPage,
-});
-
-function ModerationPage() {
+export function ModerationPage() {
   const [source, setSource] = useState<string>("_all");
   const q = useQuery({
     queryKey: ["mod-list", source],
@@ -72,7 +68,7 @@ function ModerationPage() {
                 )}
               </div>
               <div className="flex gap-2 shrink-0">
-                <Link to="/sales/$id" params={{ id: r.id }}><Button size="sm" variant="outline">Деталі</Button></Link>
+                <Link to={`/sales/${r.id}`}><Button size="sm" variant="outline">Деталі</Button></Link>
                 <Button size="sm" onClick={() => act(r.id, "approve")}>Підтвердити</Button>
                 <Button size="sm" variant="outline" onClick={() => act(r.id, "duplicate")}>Дублікат</Button>
                 <Button size="sm" variant="ghost" onClick={() => act(r.id, "reject")}>Відхилити</Button>

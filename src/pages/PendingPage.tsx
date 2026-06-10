@@ -1,21 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 
-export const Route = createFileRoute("/pending")({
-  ssr: false,
-  component: PendingPage,
-});
-
-function PendingPage() {
+export function PendingPage() {
   const { user, loading, logout, refresh } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", replace: true });
-    if (user?.status === "approved") navigate({ to: "/dashboard", replace: true });
+    if (!loading && !user) navigate("/auth", { replace: true });
+    if (user?.status === "approved") navigate("/dashboard", { replace: true });
   }, [user, loading, navigate]);
 
   return (
@@ -30,7 +25,7 @@ function PendingPage() {
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Button variant="outline" onClick={() => refresh()}>Оновити статус</Button>
-          <Button variant="ghost" onClick={async () => { await logout(); navigate({ to: "/auth" }); }}>Вийти</Button>
+          <Button variant="ghost" onClick={async () => { await logout(); navigate("/auth"); }}>Вийти</Button>
         </div>
       </div>
     </div>

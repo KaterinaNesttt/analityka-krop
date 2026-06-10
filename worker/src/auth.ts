@@ -11,7 +11,6 @@ function isEmail(s: string) {
 
 async function issueTokens(env: Env, userId: string, role: string, status: string) {
   const access = await signJwt({ sub: userId, role: role as any, status: status as any }, env.JWT_SECRET, ACCESS_TTL);
-  const refreshRaw = `${userId}.${crypto.randomUUID()}.${Date.now()}`;
   const refresh = await signJwt({ sub: userId, role: role as any, status: status as any }, env.JWT_REFRESH_SECRET, REFRESH_TTL);
   const tokenHash = await hmacSha256Hex(env.JWT_REFRESH_SECRET, refresh);
   await env.DB.prepare(

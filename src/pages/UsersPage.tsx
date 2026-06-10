@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
@@ -8,12 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fmtDate, roleLabel, statusLabel } from "@/lib/format";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
 
-export const Route = createFileRoute("/_authenticated/users")({
-  component: UsersPage,
-});
-
-function UsersPage() {
+export function UsersPage() {
+  const { user } = useAuth();
   const q = useQuery({ queryKey: ["users"], queryFn: () => api<{ users: any[] }>("/api/users") });
 
   const approve = async (id: string) => { try { await api(`/api/users/${id}/approve`, { method: "PATCH" }); toast.success("Підтверджено"); q.refetch(); } catch (e: any) { toast.error(e.message); } };
@@ -44,11 +41,12 @@ function UsersPage() {
                   <td className="p-3 text-muted-foreground">{u.name ?? "—"}</td>
                   <td className="p-3">
                     <Select value={u.role} onValueChange={(v) => setRole(u.id, v)}>
-                      <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-40 h-8"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="user">{roleLabel("user")}</SelectItem>
                         <SelectItem value="moderator">{roleLabel("moderator")}</SelectItem>
                         <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
+                        <SelectItem value="superuser" disabled={user?.role !== "superuser"}>{roleLabel("superuser")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </td>

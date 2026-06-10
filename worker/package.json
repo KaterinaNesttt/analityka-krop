@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "db:migrate:local": "wrangler d1 migrations apply analityka-krop --local",
-    "db:migrate": "wrangler d1 migrations apply analityka-krop --remote",
-    "db:seed": "wrangler d1 execute analityka-krop --remote --file=./seed.sql"
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply anal --local",
+    "db:migrate": "wrangler d1 migrations apply anal --remote",
+    "db:seed": "wrangler d1 execute anal --remote --file=./seed.sql"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240725.0",
     "typescript": "^5.5.0",
-    "wrangler": "^3.78.0"
+    "wrangler": "^4.99.0"
   }
 }

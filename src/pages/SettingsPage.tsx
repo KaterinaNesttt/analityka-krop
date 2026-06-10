@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,11 +8,7 @@ import { toast } from "sonner";
 import { roleLabel } from "@/lib/format";
 import { Moon, Sun, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/settings")({
-  component: SettingsPage,
-});
-
-function SettingsPage() {
+export function SettingsPage() {
   const { theme, set } = useTheme();
   const { user } = useAuth();
 
@@ -57,7 +52,7 @@ function SettingsPage() {
           </CardContent>
         </Card>
 
-        {user?.role === "admin" && (
+        {(user?.role === "superuser" || user?.role === "admin") && (
           <Card>
             <CardHeader><CardTitle className="text-base text-destructive">Службові дії</CardTitle></CardHeader>
             <CardContent>

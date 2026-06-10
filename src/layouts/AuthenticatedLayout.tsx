@@ -1,5 +1,5 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   LayoutDashboard, BarChart3, Table2, Plus, Upload, ShieldCheck, Users, Settings, Moon, Sun, LogOut, Building2, Menu,
 } from "lucide-react";
-import { useState } from "react";
 import { roleLabel } from "@/lib/format";
-
-export const Route = createFileRoute("/_authenticated")({
-  ssr: false,
-  component: AuthLayout,
-});
 
 interface NavItem { to: string; label: string; icon: any; roles?: string[]; }
 
@@ -28,26 +22,26 @@ const NAV: NavItem[] = [
   { to: "/settings", label: "Налаштування", icon: Settings },
 ];
 
-function AuthLayout() {
+export function AuthenticatedLayout() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
-    if (!user) navigate({ to: "/auth", replace: true });
-    else if (user.status !== "approved") navigate({ to: "/pending", replace: true });
+    if (!user) navigate("/auth", { replace: true });
+    else if (user.status !== "approved") navigate("/pending", { replace: true });
   }, [user, loading, navigate]);
 
-  useEffect(() => { setMobileOpen(false); }, [path]);
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   if (loading || !user || user.status !== "approved") {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Завантаження…</div>;
   }
 
-  const visibleNav = NAV.filter((n) => !n.roles || n.roles.includes(user.role));
+  const visibleNav = NAV.filter((n) => !n.roles || user.role === "superuser" || n.roles.includes(user.role));
 
   const sidebar = (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
@@ -63,7 +57,7 @@ function AuthLayout() {
       <ScrollArea className="flex-1">
         <nav className="p-3 space-y-1">
           {visibleNav.map((n) => {
-            const active = path === n.to || (n.to !== "/dashboard" && path.startsWith(n.to));
+            const active = pathname === n.to || (n.to !== "/dashboard" && pathname.startsWith(n.to));
             const Icon = n.icon;
             return (
               <Link
@@ -91,7 +85,7 @@ function AuthLayout() {
           <Button variant="outline" size="sm" className="flex-1" onClick={toggle}>
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button variant="outline" size="sm" className="flex-1" onClick={async () => { await logout(); navigate({ to: "/auth" }); }}>
+          <Button variant="outline" size="sm" className="flex-1" onClick={async () => { await logout(); navigate("/auth"); }}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
@@ -103,7 +97,6 @@ function AuthLayout() {
     <div className="min-h-screen flex w-full">
       <aside className="hidden md:block w-64 shrink-0">{sidebar}</aside>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />

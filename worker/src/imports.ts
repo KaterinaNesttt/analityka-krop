@@ -62,6 +62,71 @@ export async function parseTelegram(req: Request, env: Env): Promise<Response> {
 }
 
 // CSV: рядки з мапінгом колонок
+function clean(v: unknown): string | null {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim();
+  return s ? s : null;
+}
+
+function num(v: unknown): number | null {
+  const s = clean(v);
+  if (!s) return null;
+  const m = s.replace(/\s/g, '').replace(',', '.').match(/\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
+function rooms(v: unknown): number | null {
+  const s = clean(v);
+  if (!s) return null;
+  const byK = s.match(/(\d+)\s*к/i);
+  if (byK) return Number(byK[1]);
+  const first = s.match(/\d+/);
+  return first ? Number(first[0]) : null;
+}
+
+function inferSaleDate(fileName?: string): string {
+  const year = clean(fileName)?.match(/\b(20\d{2})\b/)?.[1];
+  return year ? `${year}-01-01` : new Date().toISOString().slice(0, 10);
+}
+
+function inferPropertyType(body: any, r: any): string {
+  if (body?.property_type === 'house' || body?.property_type === 'apartment') return body.property_type;
+  const src = `${body?.file_name ?? ''} ${r.property_type ?? ''} ${r.building_type ?? ''}`.toLowerCase();
+  if (/буд|таун|дуплекс|котедж|house/.test(src)) return 'house';
+  if (/кварт|apartment/.test(src)) return 'apartment';
+  return 'apartment';
+}
+
+function normalizeCsvRow(r: any, body: any): any {
+  const comment = [clean(r.comment), clean(r.comment_extra)].filter(Boolean).join('\n') || null;
+  return {
+    property_type: inferPropertyType(body, r),
+    district: clean(r.district),
+    address_hint: clean(r.address_hint),
+    rooms: rooms(r.rooms),
+    total_area: num(r.total_area),
+    land_area: clean(r.land_area),
+    communications: clean(r.communications),
+    amenities: clean(r.amenities),
+    living_area: num(r.living_area),
+    kitchen_area: num(r.kitchen_area),
+    floor: num(r.floor),
+    floors_total: num(r.floors_total),
+    building_type: clean(r.building_type),
+    condition: clean(r.condition),
+    furniture: clean(r.furniture),
+    sale_term: clean(r.sale_term),
+    year_built: num(r.year_built),
+    initial_price: num(r.initial_price),
+    final_price: num(r.final_price),
+    currency: clean(r.currency) ?? 'USD',
+    sale_date: clean(r.sale_date) ?? inferSaleDate(body?.file_name),
+    source_type: clean(r.source_type) ?? 'csv',
+    listing_url: clean(r.listing_url),
+    comment,
+  };
+}
+
 export async function importCsv(req: Request, env: Env): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
   const body = await req.json().catch(() => null) as any;
@@ -70,8 +135,9 @@ export async function importCsv(req: Request, env: Env): Promise<Response> {
   const wantStatus = u.role !== 'user' && body?.status === 'approved' ? 'approved' : 'pending';
   let created = 0, dup = 0, errs = 0;
   const now = nowIso();
-  for (const r of rows) {
+  for (const raw of rows) {
     try {
+      const r = normalizeCsvRow(raw, body);
       if (!r.property_type || !r.district || !r.total_area || !r.final_price || !r.currency || !r.sale_date || !r.source_type) { errs++; continue; }
       // Дублікат: дата + район + кімнати + площа + ціна
       const existing = await env.DB.prepare(
@@ -84,13 +150,14 @@ export async function importCsv(req: Request, env: Env): Promise<Response> {
       const da = ip ? ip - fp : null;
       const dp = ip && ip > 0 ? (da! / ip) * 100 : null;
       await env.DB.prepare(
-        `INSERT INTO sales (id, property_type, district, address_hint, rooms, total_area, living_area, kitchen_area, floor, floors_total, building_type, condition, year_built, initial_price, final_price, currency, discount_amount, discount_percent, sale_date, source_type, listing_url, comment, status, submitted_by, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO sales (id, property_type, district, address_hint, rooms, total_area, land_area, communications, amenities, living_area, kitchen_area, floor, floors_total, building_type, condition, furniture, sale_term, year_built, initial_price, final_price, currency, discount_amount, discount_percent, sale_date, source_type, listing_url, comment, status, submitted_by, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         id, r.property_type, r.district, r.address_hint ?? null, r.rooms ?? null,
-        Number(r.total_area), r.living_area ?? null, r.kitchen_area ?? null,
+        Number(r.total_area), r.land_area ?? null, r.communications ?? null, r.amenities ?? null,
+        r.living_area ?? null, r.kitchen_area ?? null,
         r.floor ?? null, r.floors_total ?? null, r.building_type ?? null, r.condition ?? null,
-        r.year_built ?? null, ip, fp, r.currency, da, dp, r.sale_date, r.source_type,
+        r.furniture ?? null, r.sale_term ?? null, r.year_built ?? null, ip, fp, r.currency, da, dp, r.sale_date, r.source_type,
         r.listing_url ?? null, r.comment ?? null, wantStatus, u.id, now, now,
       ).run();
       created++;

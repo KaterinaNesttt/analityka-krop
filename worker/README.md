@@ -10,14 +10,14 @@ npm install            # або bun install / pnpm install
 npx wrangler login
 
 # 1. Створити D1 базу
-npx wrangler d1 create analityka-krop
+npx wrangler d1 create anal
 # Скопіювати database_id з виводу і вставити в wrangler.toml
 
 # 2. Прогнати міграції
-npx wrangler d1 migrations apply analityka-krop --remote
+npx wrangler d1 migrations apply anal --remote
 
 # 3. (Опційно) Завантажити демо-дані
-npx wrangler d1 execute analityka-krop --remote --file=./seed.sql
+npx wrangler d1 execute anal --remote --file=./seed.sql
 
 # 4. Задати секрети
 npx wrangler secret put JWT_SECRET           # будь-який довгий рядок
@@ -44,8 +44,8 @@ npx wrangler deploy
 ## Локальна розробка
 
 ```bash
-npx wrangler d1 migrations apply analityka-krop --local
-npx wrangler d1 execute analityka-krop --local --file=./seed.sql
+npx wrangler d1 migrations apply anal --local
+npx wrangler d1 execute anal --local --file=./seed.sql
 npx wrangler dev
 ```
 

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
@@ -11,11 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DISTRICTS, PROPERTY_TYPES, CURRENCIES, CONDITIONS, SOURCE_TYPES } from "@/components/filters-bar";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/sales/new")({
-  component: NewSale,
-});
-
-function NewSale() {
+export function NewSalePage() {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [f, setF] = useState<any>({
@@ -36,7 +32,7 @@ function NewSale() {
       });
       await api("/api/sales", { method: "POST", body: payload });
       toast.success("Дані відправлено на перевірку");
-      navigate({ to: "/dashboard" });
+      navigate("/dashboard");
     } catch (e: any) {
       toast.error(e.message);
     } finally { setBusy(false); }
@@ -80,7 +76,7 @@ function NewSale() {
         </Card>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => navigate({ to: "/dashboard" })}>Скасувати</Button>
+          <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>Скасувати</Button>
           <Button type="submit" disabled={busy}>{busy ? "..." : "Відправити на перевірку"}</Button>
         </div>
       </form>

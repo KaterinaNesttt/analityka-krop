@@ -21,7 +21,7 @@ export function propertyTypeLabel(t: string): string {
   return m[t] ?? t;
 }
 export function roleLabel(r: string): string {
-  return ({ admin: 'Адмін', moderator: 'Модератор', user: 'Користувач' } as Record<string, string>)[r] ?? r;
+  return ({ superuser: 'Суперкористувач', admin: 'Адмін', moderator: 'Модератор', user: 'Користувач' } as Record<string, string>)[r] ?? r;
 }
 export function statusLabel(s: string): string {
   return ({ pending: 'На перевірці', approved: 'Підтверджено', rejected: 'Відхилено', duplicate: 'Дублікат', blocked: 'Заблоковано' } as Record<string, string>)[s] ?? s;

@@ -1,19 +1,14 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/auth")({
-  ssr: false,
-  component: AuthPage,
-});
-
-function AuthPage() {
+export function AuthPage() {
   const { user, loading, login, register } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"login" | "register">("login");
@@ -24,7 +19,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate({ to: user.status === "approved" ? "/dashboard" : "/pending", replace: true });
+      navigate(user.status === "approved" ? "/dashboard" : "/pending", { replace: true });
     }
   }, [user, loading, navigate]);
 

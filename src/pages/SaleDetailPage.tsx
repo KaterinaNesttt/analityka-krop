@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell, StatCard } from "@/components/page-shell";
@@ -9,18 +9,15 @@ import { fmtDate, fmtMoney, fmtArea, propertyTypeLabel, sourceLabel, statusLabel
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/sales/$id")({
-  component: SaleDetail,
-});
-
-function SaleDetail() {
-  const { id } = Route.useParams();
+export function SaleDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isStaff = user?.role === "admin" || user?.role === "moderator";
+  const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["sale", id],
     queryFn: () => api<{ sale: any }>(`/api/sales/${id}`),
+    enabled: !!id,
   });
   const districtsQ = useQuery({
     queryKey: ["d-cmp"],
@@ -50,7 +47,7 @@ function SaleDetail() {
     if (!confirm("Видалити запис?")) return;
     try {
       await api(`/api/sales/${id}`, { method: "DELETE" });
-      toast.success("Видалено"); navigate({ to: "/sales" });
+      toast.success("Видалено"); navigate("/sales");
     } catch (e: any) { toast.error(e.message); }
   };
 
@@ -76,8 +73,13 @@ function SaleDetail() {
               <dt className="text-muted-foreground">Поверх</dt><dd>{s.floor ? `${s.floor}/${s.floors_total ?? "?"}` : "—"}</dd>
               <dt className="text-muted-foreground">Житлова площа</dt><dd>{fmtArea(s.living_area)}</dd>
               <dt className="text-muted-foreground">Кухня</dt><dd>{fmtArea(s.kitchen_area)}</dd>
-              <dt className="text-muted-foreground">Тип будинку</dt><dd>{s.building_type ?? "—"}</dd>
+              <dt className="text-muted-foreground">Тип</dt><dd>{s.building_type ?? "—"}</dd>
+              <dt className="text-muted-foreground">Земля</dt><dd>{s.land_area ?? "—"}</dd>
+              <dt className="text-muted-foreground">Комунікації</dt><dd>{s.communications ?? "—"}</dd>
+              <dt className="text-muted-foreground">Зручності</dt><dd>{s.amenities ?? "—"}</dd>
               <dt className="text-muted-foreground">Стан</dt><dd>{s.condition ?? "—"}</dd>
+              <dt className="text-muted-foreground">Меблі/техніка</dt><dd>{s.furniture ?? "—"}</dd>
+              <dt className="text-muted-foreground">Термін</dt><dd>{s.sale_term ?? "—"}</dd>
               <dt className="text-muted-foreground">Рік побудови</dt><dd>{s.year_built ?? "—"}</dd>
               <dt className="text-muted-foreground">Джерело</dt><dd>{sourceLabel(s.source_type)}</dd>
               <dt className="text-muted-foreground">Початкова ціна</dt><dd>{s.initial_price ? fmtMoney(s.initial_price, s.currency) : "—"}</dd>
@@ -104,7 +106,7 @@ function SaleDetail() {
               <Button onClick={() => moderate("approve")}>Підтвердити</Button>
               <Button variant="outline" onClick={() => moderate("reject")}>Відхилити</Button>
               <Button variant="outline" onClick={() => moderate("duplicate")}>Дублікат</Button>
-              {user?.role === "admin" && <Button variant="destructive" onClick={del}>Видалити</Button>}
+              {(user?.role === "superuser" || user?.role === "admin") && <Button variant="destructive" onClick={del}>Видалити</Button>}
             </CardContent>
             {s.source_text && (
               <CardContent>

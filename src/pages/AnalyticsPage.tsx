@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -9,21 +8,17 @@ import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
-export const Route = createFileRoute("/_authenticated/analytics")({
-  component: AnalyticsPage,
-});
-
 const TOOLTIP = { background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8 };
 
-function AnalyticsPage() {
+export function AnalyticsPage() {
   const [filters, setFilters] = useState<SalesFilters>({});
-  const q = (path: string) => ({ ...filters });
-  const dyn = useQuery({ queryKey: ["a-dyn", filters], queryFn: () => api<any>("/api/analytics/price-dynamics", { query: q("") }) });
-  const ppm = useQuery({ queryKey: ["a-ppm", filters], queryFn: () => api<any>("/api/analytics/price-per-m2", { query: q("") }) });
-  const dist = useQuery({ queryKey: ["a-dist", filters], queryFn: () => api<any>("/api/analytics/districts", { query: q("") }) });
-  const rooms = useQuery({ queryKey: ["a-rooms", filters], queryFn: () => api<any>("/api/analytics/rooms", { query: q("") }) });
-  const distr = useQuery({ queryKey: ["a-distr", filters], queryFn: () => api<any>("/api/analytics/distribution", { query: q("") }) });
-  const disc = useQuery({ queryKey: ["a-disc", filters], queryFn: () => api<any>("/api/analytics/discounts", { query: q("") }) });
+  const q = () => ({ ...filters });
+  const dyn = useQuery({ queryKey: ["a-dyn", filters], queryFn: () => api<any>("/api/analytics/price-dynamics", { query: q() }) });
+  const ppm = useQuery({ queryKey: ["a-ppm", filters], queryFn: () => api<any>("/api/analytics/price-per-m2", { query: q() }) });
+  const dist = useQuery({ queryKey: ["a-dist", filters], queryFn: () => api<any>("/api/analytics/districts", { query: q() }) });
+  const rooms = useQuery({ queryKey: ["a-rooms", filters], queryFn: () => api<any>("/api/analytics/rooms", { query: q() }) });
+  const distr = useQuery({ queryKey: ["a-distr", filters], queryFn: () => api<any>("/api/analytics/distribution", { query: q() }) });
+  const disc = useQuery({ queryKey: ["a-disc", filters], queryFn: () => api<any>("/api/analytics/discounts", { query: q() }) });
 
   return (
     <PageShell>
