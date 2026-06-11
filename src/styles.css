@@ -158,6 +158,15 @@
     background-size: cover;
   }
 
+  .asset-active-pill {
+    aspect-ratio: 94 / 30;
+    --surface-image: url("../приклад/sidebar-active-pill.png");
+    border-radius: 9px;
+  }
+
+  .asset-team-pill {
+    --surface-image: url("../приклад/sidebar-cta-pill.png");
+    --png-fit-left: 2%;
     --png-fit-top: 0%;
     --png-fit-right: 2.67%;
     --png-fit-bottom: 16.2%;
