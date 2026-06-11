@@ -2,7 +2,9 @@
 // Якщо змінна не задана — використовується відносний шлях, що зручно для self-host
 // (фронтенд + Worker на одному домені) або для проксі через Pages Functions.
 
-const BASE_URL: string = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
+const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const DEFAULT_API_URL = import.meta.env.DEV ? '' : 'https://analityka-krop-api.roman-v-shkurenko.workers.dev';
+const BASE_URL: string = configuredApiUrl || DEFAULT_API_URL;
 
 const ACCESS_KEY = 'ak.access';
 const REFRESH_KEY = 'ak.refresh';
