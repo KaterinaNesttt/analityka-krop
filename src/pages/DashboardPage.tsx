@@ -240,8 +240,8 @@ export function DashboardPage() {
       </section>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="surface-gas-shell rounded-[6.75rem]">
-          <CardHeader className="px-2 pb-1 pt-18">
+        <Card className="surface-flow rounded-[4.75rem]">
+          <CardHeader className="px-2 pb-1 pt-8">
             <CardTitle className="text-base text-center text-muted-foreground">Цінові коридори</CardTitle>
           </CardHeader>
           <CardContent className="h-62 rounded-[1.25rem] p-1 pt-0">
@@ -438,13 +438,13 @@ function ProgressRow({ label, value, total }: { label: string; value: number; to
 function InsightCard({ icon, title, value, hint }: { icon: ReactNode; title: string; value: string; hint: string }) {
   return (
     <Card className="surface-market">
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex justify-between">
         <div className="mb-3 flex items-center gap-2 text-muted-foreground">
           {icon}
           <span className="text-sm">{title}</span>
         </div>
         <div className="text-2xl font-semibold tabular-nums">{value}</div>
-        <div className="mt-2 text-xs text-muted-foreground">{hint}</div>
+        
       </CardContent>
     </Card>
   );
@@ -460,7 +460,7 @@ function Leaderboard({ title, rows, empty }: { title: string; rows: { label: str
       <CardContent className="space-y-3">
         {!rows.length ? <div className="text-sm text-muted-foreground">{empty}</div> : null}
         {rows.map((row) => (
-          <div key={row.label} className="surface-market-row rounded-[1.4rem] px-4 py-3">
+          <div key={row.label} className="surface rounded-[0.9rem] px-4 py-3">
             <div className="mb-1 flex items-center justify-between gap-3 text-sm">
               <span className="truncate">{row.label}</span>
               <span className="tabular-nums text-muted-foreground">{fmtNumber(row.value)}</span>

@@ -220,6 +220,10 @@
     --surface-image: url("../приклад/gas-shell.png");
     border-radius: 2rem;
   }
+      .surface-team-shell {
+    --surface-image: url("../приклад/team-pill-shell.png");
+    border-radius: 2rem;
+  }
 
   .surface-upgrade {
     --surface-image: url("../приклад/upgrade-shell.png");
