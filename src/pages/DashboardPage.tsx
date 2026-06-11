@@ -162,12 +162,12 @@ export function DashboardPage() {
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="surface-gas-shell rounded-[4.75rem]">
-          <CardHeader className="px-6 pb-1 pt-6">
-            <CardTitle className="text-base">Склад бази</CardTitle>
+          <CardHeader className="px-3 pb-1 pt-5">
+            <CardTitle className="text-base text-center text-muted-foreground md:text-lg">Склад бази</CardTitle>
           </CardHeader>
-          <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
+          <CardContent className="h-62 rounded-[1.25rem] p-2 pt-0">
             <ResponsiveContainer>
-              <BarChart data={data.typeData} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 16 }}>
+              <BarChart data={data.typeData} layout="vertical" margin={{ top: 14, right: 14, bottom: 14, left: 2 }}>
                 {renderChartVolumeDefs({ id: "dashType", colors: TYPE_COLORS, direction: "horizontal" })}
                 <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
                 <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
@@ -183,15 +183,15 @@ export function DashboardPage() {
 
 <Card className="surface-flow rounded-[4.15rem]">
   <CardHeader className="px-6 pb-1 pt-6">
-    <CardTitle className="text-base">Найактивніші локації</CardTitle>
+    <CardTitle className="text-base text-center text-muted-foreground">Найактивніші локації</CardTitle>
   </CardHeader>
 
-  <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
+  <CardContent className="h-62 rounded-[1.25rem] p-2 pt-0">
     <ResponsiveContainer>
 <BarChart
   data={data.topDistricts}
   layout="horizontal"
-  margin={{ top: 14, right: 24, bottom: 6, left: 24 }}
+  margin={{ top: 14, right: 34, bottom: 6, left: 1 }}
 >
         {renderChartVolumeDefs({
           id: "dashDistrict",
@@ -241,12 +241,12 @@ export function DashboardPage() {
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card className="surface-gas-shell rounded-[6.75rem]">
-          <CardHeader className="px-6 pb-1 pt-18">
-            <CardTitle className="text-base">Цінові коридори</CardTitle>
+          <CardHeader className="px-2 pb-1 pt-18">
+            <CardTitle className="text-base text-center text-muted-foreground">Цінові коридори</CardTitle>
           </CardHeader>
-          <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
+          <CardContent className="h-62 rounded-[1.25rem] p-1 pt-0">
             <ResponsiveContainer>
-              <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 20, bottom: 12, left: 0 }}>
+              <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 30, bottom: 12, left: 0 }}>
                 {renderChartAreaDefs({ id: "dashPrice", color: "#d4a84f" })}
                 <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
                 <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
