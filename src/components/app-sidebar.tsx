@@ -29,18 +29,15 @@ export function AppSidebar({
   const navigate = useNavigate();
 
   return (
-    <aside className={`flex h-full flex-col bg-sidebar/95 text-sidebar-foreground border-sidebar-border backdrop-blur-xl shadow-[inset_-1px_0_0_var(--color-sidebar-border)] ${className}`}>
-      <div className="px-5 h-16 flex items-center gap-2 border-b border-sidebar-border">
-        <div className="w-8 h-8 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
-          <Building2 className="h-4 w-4" />
-        </div>
+    <aside className={`asset-sidebar flex max-h-150 max-w-36 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground shadow-[18px_18px_16px_black]  ${className}`}>
+      <div className="px-3 h-16 flex items-center gap-3 ">
         <div>
-          <div className="font-semibold leading-tight">Аналітика Кроп</div>
-          <div className="text-[11px] text-muted-foreground">Кропивницький</div>
+          <div className="font-semibold leading-tight text-white tracking-[0.08em]">Аналітика</div>
+          <div className="text-[8px] uppercase tracking-[0.18em] text-white/70">Кропивницький</div>
         </div>
       </div>
-      <ScrollArea className="flex-1">
-        <nav className="p-3 space-y-1">
+      <ScrollArea className="flex-1 gap-0.5">
+        <nav className="flex flex-col gap-0.5 px-0.5">
           {nav.map((n) => {
             const active = pathname === n.to || (n.to !== "/dashboard" && pathname.startsWith(n.to));
             const Icon = n.icon;
@@ -48,29 +45,29 @@ export function AppSidebar({
               <Link
                 key={n.to}
                 to={n.to}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                className={`flex w-full items-center gap-2 px-4 text-xs font-medium transition-[transform,opacity] duration-200 active:scale-[0.98] ${
                   active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    ? "asset-active-pill text-sidebar-primary-foreground"
+                    : "min-h-11 text-sidebar-foreground hover:text-sidebar-accent-foreground"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon className="h-4 w-4 shrink-0 opacity-98" strokeWidth={1.8} />
                 <span>{n.label}</span>
               </Link>
             );
           })}
         </nav>
       </ScrollArea>
-      <div className="p-3 border-t border-sidebar-border space-y-2">
-        <div className="px-2 text-xs text-muted-foreground">
-          <div className="truncate">{user.name ?? user.email}</div>
-          <div>{roleLabel(user.role)}</div>
+      <div className="space-y-3 p-4">
+        <div className="asset-team-pill px-4 py-3 text-xs text-sidebar-foreground/76">
+          <div className="truncate font-medium text-sidebar-foreground">{user.name ?? user.email}</div>
+          <div className="mt-0.5">{roleLabel(user.role)}</div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={onToggleTheme}>
+          <Button variant="outline" size="sm" className="asset-cta-pill flex-1 border-0 bg-transparent text-sidebar-foreground shadow-none hover:bg-transparent hover:text-sidebar-foreground" onClick={onToggleTheme}>
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button variant="outline" size="sm" className="flex-1" onClick={async () => { await onLogout(); navigate("/auth"); }}>
+          <Button variant="outline" size="sm" className="asset-cta-pill flex-1 border-0 bg-transparent text-sidebar-foreground shadow-none hover:bg-transparent hover:text-sidebar-foreground" onClick={async () => { await onLogout(); navigate("/auth"); }}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>

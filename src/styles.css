@@ -94,42 +94,42 @@
 }
 
 .dark {
-  --background: oklch(0.16 0.015 250);
-  --foreground: oklch(0.94 0.005 250);
-  --card: oklch(0.21 0.02 250);
-  --card-foreground: oklch(0.94 0.005 250);
-  --popover: oklch(0.21 0.02 250);
-  --popover-foreground: oklch(0.94 0.005 250);
-  --primary: oklch(0.72 0.1 200);
-  --primary-foreground: oklch(0.15 0.02 250);
-  --secondary: oklch(0.26 0.02 250);
-  --secondary-foreground: oklch(0.94 0.005 250);
-  --muted: oklch(0.24 0.015 250);
-  --muted-foreground: oklch(0.68 0.02 250);
-  --accent: oklch(0.3 0.04 200);
-  --accent-foreground: oklch(0.9 0.04 200);
+  --background: oklch(0.12 0.018 238);
+  --foreground: oklch(0.91 0.012 86);
+  --card: oklch(0.22 0.018 218 / 84%);
+  --card-foreground: oklch(0.91 0.012 86);
+  --popover: oklch(0.17 0.02 232 / 96%);
+  --popover-foreground: oklch(0.91 0.012 86);
+  --primary: oklch(0.72 0.115 82);
+  --primary-foreground: oklch(0.14 0.018 236);
+  --secondary: oklch(0.24 0.02 222 / 86%);
+  --secondary-foreground: oklch(0.9 0.012 86);
+  --muted: oklch(0.23 0.016 224 / 82%);
+  --muted-foreground: oklch(0.71 0.015 91);
+  --accent: oklch(0.35 0.045 178);
+  --accent-foreground: oklch(0.91 0.025 180);
   --destructive: oklch(0.65 0.18 25);
   --destructive-foreground: oklch(0.99 0 0);
   --success: oklch(0.7 0.13 155);
-  --warning: oklch(0.78 0.14 70);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.65 0.09 200);
+  --warning: oklch(0.76 0.12 78);
+  --border: oklch(0.9 0.02 88 / 16%);
+  --input: oklch(0.9 0.02 88 / 13%);
+  --ring: oklch(0.72 0.115 82);
 
-  --chart-1: oklch(0.72 0.11 200);
-  --chart-2: oklch(0.7 0.13 155);
-  --chart-3: oklch(0.75 0.13 70);
-  --chart-4: oklch(0.68 0.16 25);
-  --chart-5: oklch(0.65 0.15 290);
+  --chart-1: oklch(0.72 0.12 82);
+  --chart-2: oklch(0.62 0.08 142);
+  --chart-3: oklch(0.67 0.095 190);
+  --chart-4: oklch(0.64 0.11 25);
+  --chart-5: oklch(0.58 0.09 268);
 
-  --sidebar: oklch(0.19 0.02 250);
-  --sidebar-foreground: oklch(0.9 0.005 250);
-  --sidebar-primary: oklch(0.72 0.1 200);
-  --sidebar-primary-foreground: oklch(0.15 0.02 250);
-  --sidebar-accent: oklch(0.27 0.03 200);
-  --sidebar-accent-foreground: oklch(0.9 0.04 200);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.65 0.09 200);
+  --sidebar: oklch(0.32 0.012 88 / 82%);
+  --sidebar-foreground: oklch(0.85 0.01 86);
+  --sidebar-primary: oklch(0.18 0.023 232 / 96%);
+  --sidebar-primary-foreground: oklch(0.94 0.014 86);
+  --sidebar-accent: oklch(0.43 0.018 88 / 46%);
+  --sidebar-accent-foreground: oklch(0.94 0.014 86);
+  --sidebar-border: oklch(0.9 0.018 86 / 18%);
+  --sidebar-ring: oklch(0.72 0.115 82);
 }
 
 @layer base {
@@ -138,6 +138,169 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-feature-settings: "cv11", "ss01";
+    font-family: "Geist", "Satoshi", "Aptos", "Segoe UI", system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01", "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .app-fixed-bg {
+    background-image: linear-gradient(180deg, rgba(4, 9, 15, 0.18), rgba(4, 9, 15, 0.5)), url("../приклад/bg.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .asset-sidebar {
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(5,8,12,0.18)), url("../приклад/1.png");
+    background-position: center;
+    background-size: cover;
+  }
+
+    --png-fit-top: 0%;
+    --png-fit-right: 2.67%;
+    --png-fit-bottom: 16.2%;
+    border-radius: 39px;
+  }
+
+  .surface-primary {
+    --surface-image: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)), url("../приклад/primary-sheet.png");
+    border-radius: 2.65rem;
+  }
+
+  .surface-secondary {
+    --surface-image: url("../приклад/secondary-sheet5.png");
+    border-radius: 2rem;
+  }
+
+  .surface-market {
+    --surface-image: url("../приклад/market-shell.png");
+    border-radius: 1.6rem;
+  }
+
+  .surface-market-row {
+    --surface-image: url("../приклад/market-row-shell.png");
+    --png-fit-left: 0%;
+    --png-fit-top: 0%;
+    --png-fit-right: 0.19%;
+    --png-fit-bottom: 0.6%;
+    border-radius: 1.65rem;
+  }
+
+  .surface-stat {
+    --surface-image: url("../приклад/stat-stakes-shell.png");
+    border-radius: 1.75rem;
+  }
+
+    .surface-stat-liq {
+    --surface-image: url("../приклад/stat-liquidity-shell.png");
+    border-radius: 1.75rem;
+  }
+
+  .surface-vault {
+    --surface-image: url("../приклад/vault-shell.png");
+    --png-fit-left: 0.54%;
+    --png-fit-top: 0.58%;
+    --png-fit-right: 6.7%;
+    --png-fit-bottom: 9.86%;
+    border-radius: 2rem;
+  }
+
+  .surface-upgrade {
+    --surface-image: url("../приклад/upgrade-shell.png");
+    --png-fit-left: 3.59%;
+    --png-fit-top: 3%;
+    --png-fit-right: 3.04%;
+    --png-fit-bottom: 5%;
+    border-radius: 2rem;
+  }
+
+  .surface-alpha {
+    --surface-image: url("../приклад/alpha-shell.png");
+    --png-fit-left: 2.14%;
+    --png-fit-top: 2.53%;
+    --png-fit-right: 2.67%;
+    --png-fit-bottom: 4.11%;
+    border-radius: 2rem;
+  }
+
+  .surface-flow {
+    --surface-image: url("../приклад/flow-shell.png");
+    --png-fit-left: 0%;
+    --png-fit-top: 0%;
+    --png-fit-right: 2.84%;
+    --png-fit-bottom: 5.84%;
+    border-radius: 3.25rem;
+  }
+
+  .asset-active-pill,
+  .asset-cta-pill,
+  .asset-team-pill,
+  .surface-primary,
+  .surface-secondary,
+  .surface-market,
+  .surface-market-row,
+  .surface-stat,
+  .surface-vault,
+  .surface-upgrade,
+  .surface-alpha,
+  .surface-flow {
+    background-color: transparent !important;
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+  }
+
+  .asset-active-pill::before,
+  .asset-cta-pill::before,
+  .asset-team-pill::before,
+  .surface-primary::before,
+  .surface-secondary::before,
+  .surface-market::before,
+  .surface-market-row::before,
+  .surface-stat::before,
+  .surface-vault::before,
+  .surface-upgrade::before,
+  .surface-alpha::before,
+  .surface-flow::before {
+    background-image: var(--surface-image);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    border-radius: inherit;
+    bottom: calc(var(--png-fit-bottom, 0%) * -1);
+    content: "";
+    left: calc(var(--png-fit-left, 0%) * -1);
+    pointer-events: none;
+    position: absolute;
+    right: calc(var(--png-fit-right, 0%) * -1);
+    top: calc(var(--png-fit-top, 0%) * -1);
+    z-index: -1;
+  }
+
+  .asset-active-pill > *,
+  .asset-cta-pill > *,
+  .asset-team-pill > *,
+  .surface-primary > *,
+  .surface-secondary > *,
+  .surface-market > *,
+  .surface-market-row > *,
+  .surface-stat > *,
+  .surface-vault > *,
+  .surface-upgrade > *,
+  .surface-alpha > *,
+  .surface-flow > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .glass-edge {
+    border: 1px solid color-mix(in oklch, var(--color-border) 78%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -18px 42px rgba(3,7,12,0.12);
+  }
+
+  .inset-surface {
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.1), inset 0 -16px 32px rgba(0,0,0,0.22);
   }
 }

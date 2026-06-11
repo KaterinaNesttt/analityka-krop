@@ -5,6 +5,7 @@ import { PageHeader, PageShell } from "@/components/page-shell";
 import { fmtMoney, fmtNumber } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LabelList, type LabelProps } from "recharts";
 import { Activity, AreaChart as AreaIcon, Building2, Home, KeyRound, MapPin, PiggyBank, Scale3D } from "lucide-react";
 import {
   Area,
@@ -35,6 +36,38 @@ type Sale = {
 
 type TooltipRow = { label: string; value: string };
 
+const renderDistrictLabel = ({ x, y, width, height, value }: LabelProps) => {
+  if (
+    typeof x !== "number" ||
+    typeof y !== "number" ||
+    typeof width !== "number" ||
+    typeof height !== "number"
+  ) {
+    return null;
+  }
+
+  const label = shortLabel(String(value ?? ""));
+
+  const labelX = x - 8;          // лівіше від бара
+  const labelY = y + height - 2; // старт з самого низу бара
+
+  return (
+    <text
+      x={labelX}
+      y={labelY}
+      textAnchor="start"
+      dominantBaseline="middle"
+      transform={`rotate(-90 ${labelX} ${labelY})`}
+      fill="var(--color-muted-foreground)"
+      fontSize={10}
+      fontWeight={700}
+      pointerEvents="none"
+    >
+      {label}
+    </text>
+  );
+};
+
 const TYPE_LABELS: Record<string, string> = {
   apartment: "Квартири",
   house: "Будинки",
@@ -64,7 +97,6 @@ export function DashboardPage() {
   if (sales.isLoading) {
     return (
       <PageShell>
-        <PageHeader title="Дашборд" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="h-32 rounded-lg border bg-card/70" />
@@ -77,7 +109,6 @@ export function DashboardPage() {
   if (!data.total) {
     return (
       <PageShell>
-        <PageHeader title="Дашборд" />
         <Card>
           <CardContent className="p-10 text-center text-muted-foreground">Немає підтверджених продажів для аналізу.</CardContent>
         </Card>
@@ -87,10 +118,8 @@ export function DashboardPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Дашборд" />
-
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <div className="rounded-lg border bg-[radial-gradient(circle_at_top_left,rgba(212,168,79,0.18),transparent_36%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 md:p-6 shadow-sm">
+        <div className="surface-primary glass-edge p-5 md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Підтверджена база</div>
@@ -112,7 +141,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <Card>
+        <Card className="surface-upgrade">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Якість даних</CardTitle>
           </CardHeader>
@@ -132,62 +161,98 @@ export function DashboardPage() {
       </section>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card>
-          <CardHeader>
+        <Card className="surface-flow">
+          <CardHeader className="px-6 pb-1 pt-6">
             <CardTitle className="text-base">Склад бази</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
             <ResponsiveContainer>
-              <BarChart data={data.typeData} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 12 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} width={82} />
-                <Tooltip cursor={{ fill: "rgba(212,168,79,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="count" radius={[0, 6, 6, 0]}>
-                  {data.typeData.map((entry) => <Cell key={entry.key} fill={entry.color} />)}
+              <BarChart data={data.typeData} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 16 }}>
+                {renderChartVolumeDefs({ id: "dashType", colors: TYPE_COLORS, direction: "horizontal" })}
+                <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} width={82} axisLine={false} tickLine={false} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Bar dataKey="count" barSize={30} radius={[0, 18, 18, 0]} >
+                  {data.typeData.map((entry) => <Cell key={entry.key} fill={`url(#dashType-${entry.key})`} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Найактивніші локації</CardTitle>
-          </CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer>
-              <BarChart data={data.topDistricts} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <YAxis type="category" dataKey="district" tickFormatter={shortLabel} stroke="var(--color-muted-foreground)" fontSize={11} width={104} />
-                <Tooltip cursor={{ fill: "rgba(212,168,79,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="count" fill="#d4a84f" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+<Card className="surface-stat-liq rounded-[4.15rem]">
+  <CardHeader className="px-6 pb-1 pt-6">
+    <CardTitle className="text-base">Найактивніші локації</CardTitle>
+  </CardHeader>
+
+  <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
+    <ResponsiveContainer>
+<BarChart
+  data={data.topDistricts}
+  layout="horizontal"
+  margin={{ top: 14, right: 24, bottom: 6, left: 24 }}
+>
+        {renderChartVolumeDefs({
+          id: "dashDistrict",
+          colors: { count: "#d4a84f" },
+          direction: "horizontal",
+        })}
+
+        <CartesianGrid
+          strokeDasharray="2 7"
+          horizontal={false}
+          stroke="rgba(255,255,255,0.07)"
+        />
+
+        <YAxis
+          type="number"
+          stroke="var(--color-muted-foreground)"
+          fontSize={12}
+          allowDecimals={false}
+          axisLine={false}
+          tickLine={false}
+        />
+
+<XAxis
+  type="category"
+  dataKey="district"
+  hide
+/>
+
+        <Tooltip cursor={false} content={<CleanTooltip />} />
+
+<Bar
+  dataKey="count"
+  fill="url(#dashDistrict-count)"
+  barSize={24}
+  radius={[18, 18, 0, 0]}
+>
+  <LabelList
+    dataKey="district"
+    content={renderDistrictLabel}
+  />
+</Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </CardContent>
+</Card>
       </section>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card>
-          <CardHeader>
+        <Card className="surface-flow">
+          <CardHeader className="px-6 pb-1 pt-6">
             <CardTitle className="text-base">Цінові коридори</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
             <ResponsiveContainer>
-              <AreaChart data={data.priceBuckets} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
-                <defs>
-                  <linearGradient id="priceBand" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#d4a84f" stopOpacity={0.44} />
-                    <stop offset="100%" stopColor="#d4a84f" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <Tooltip cursor={{ stroke: "#d4a84f", strokeWidth: 1 }} content={<CleanTooltip />} />
-                <Area type="monotone" dataKey="count" stroke="#d4a84f" fill="url(#priceBand)" strokeWidth={2} />
+              <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 20, bottom: 12, left: 0 }}>
+                {renderChartAreaDefs({ id: "dashPrice", color: "#d4a84f" })}
+                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ stroke: "#d4a84f", strokeWidth: 1, strokeOpacity: 0.35 }} content={<CleanTooltip />} />
+                <Area type="monotone" dataKey="count" stroke="#d4a84f" fill="url(#dashPrice-area)" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -237,7 +302,7 @@ function buildDashboardData(input: Sale[]) {
     };
   }).filter((item) => item.count > 0);
 
-  const topDistricts = Object.values(groupBy(rows, (sale) => sale.district)).map((districtRows) => {
+  const districtData = Object.values(groupBy(rows, (sale) => sale.district)).map((districtRows) => {
     const first = districtRows[0];
     const ppm = districtRows
       .filter((sale) => isFiniteNumber(sale.total_area) && Number(sale.total_area) > 0)
@@ -251,7 +316,10 @@ function buildDashboardData(input: Sale[]) {
         { label: "Середня за м²", value: fmtMoney(average(ppm)) },
       ],
     };
-  }).sort((a, b) => b.count - a.count).slice(0, 8);
+  });
+
+  const topDistrictsRanked = [...districtData].sort((a, b) => b.count - a.count).slice(0, 8);
+  const topDistricts = [...topDistrictsRanked].sort((a, b) => stableMixedKey(a.district) - stableMixedKey(b.district));
 
   const priceBuckets = BUCKETS.map((bucket) => {
     const bucketRows = rows.filter((sale) => sale.final_price >= bucket.min && sale.final_price < bucket.max);
@@ -288,7 +356,7 @@ function buildDashboardData(input: Sale[]) {
     apartments: { count: apartments.length, avgPrice: average(apartments.map((sale) => sale.final_price)) },
     houses: { count: houses.length, avgPrice: average(houses.map((sale) => sale.final_price)) },
     topDistricts,
-    topDistrict: topDistricts[0],
+    topDistrict: topDistrictsRanked[0],
     topRooms: roomRows[0] ? { rooms: roomRows[0].label.replace("-к", ""), count: roomRows[0].value } : null,
     typeData,
     priceBuckets,
@@ -300,14 +368,14 @@ function buildDashboardData(input: Sale[]) {
 
 function MetricCard({ icon, label, value, hint }: { icon: ReactNode; label: string; value: string; hint: string }) {
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
+    <Card className="surface-market overflow-hidden">
+      <CardContent className="p-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm text-muted-foreground">{label}</div>
             <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
           </div>
-          <div className="rounded-md bg-primary/10 p-2 text-primary">{icon}</div>
+          <div className="surface-vault flex h-10 w-10 items-center justify-center rounded-2xl text-primary">{icon}</div>
         </div>
         <div className="mt-3 text-xs text-muted-foreground">{hint}</div>
       </CardContent>
@@ -315,9 +383,37 @@ function MetricCard({ icon, label, value, hint }: { icon: ReactNode; label: stri
   );
 }
 
+function renderChartVolumeDefs({ id, colors, direction }: { id: string; colors: Record<string, string>; direction: "horizontal" | "vertical" }) {
+  const horizontal = direction === "horizontal";
+  return (
+    <defs>
+      {Object.entries(colors).map(([key, color]) => (
+        <linearGradient key={key} id={`${id}-${key}`} x1="0" y1="0" x2={horizontal ? "1" : "0"} y2={horizontal ? "0" : "1"}>
+          <stop offset="0%" stopColor={color} stopOpacity={0.62} />
+          <stop offset="38%" stopColor={color} stopOpacity={0.92} />
+          <stop offset="70%" stopColor={color} stopOpacity={0.78} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.48} />
+        </linearGradient>
+      ))}
+    </defs>
+  );
+}
+
+function renderChartAreaDefs({ id, color }: { id: string; color: string }) {
+  return (
+    <defs>
+      <linearGradient id={`${id}-area`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor={color} stopOpacity={0.62} />
+        <stop offset="48%" stopColor={color} stopOpacity={0.22} />
+        <stop offset="100%" stopColor={color} stopOpacity={0.03} />
+      </linearGradient>
+    </defs>
+  );
+}
+
 function HeroFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border bg-background/45 p-3">
+    <div className="surface-market-row inset-surface rounded-[1.25rem] p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
     </div>
@@ -341,7 +437,7 @@ function ProgressRow({ label, value, total }: { label: string; value: number; to
 
 function InsightCard({ icon, title, value, hint }: { icon: ReactNode; title: string; value: string; hint: string }) {
   return (
-    <Card>
+    <Card className="surface-vault">
       <CardContent className="p-4">
         <div className="mb-3 flex items-center gap-2 text-muted-foreground">
           {icon}
@@ -357,14 +453,14 @@ function InsightCard({ icon, title, value, hint }: { icon: ReactNode; title: str
 function Leaderboard({ title, rows, empty }: { title: string; rows: { label: string; value: number }[]; empty: string }) {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
-    <Card>
+    <Card className="surface-alpha">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {!rows.length ? <div className="text-sm text-muted-foreground">{empty}</div> : null}
         {rows.map((row) => (
-          <div key={row.label}>
+          <div key={row.label} className="surface-market-row rounded-[1.4rem] px-4 py-3">
             <div className="mb-1 flex items-center justify-between gap-3 text-sm">
               <span className="truncate">{row.label}</span>
               <span className="tabular-nums text-muted-foreground">{fmtNumber(row.value)}</span>
@@ -383,7 +479,7 @@ function CleanTooltip({ active, payload, label }: { active?: boolean; payload?: 
   if (!active || !payload?.length) return null;
   const rows = payload[0]?.payload?.tooltipRows ?? [];
   return (
-    <div className="rounded-md border bg-popover/95 px-3 py-2 text-sm shadow-xl">
+    <div className="glass-edge rounded-2xl bg-popover/95 px-3 py-2 text-sm">
       <div className="mb-1 font-medium">{label}</div>
       <div className="space-y-1">
         {rows.map((row) => (
@@ -403,6 +499,14 @@ function groupBy<T>(rows: T[], getKey: (row: T) => string): Record<string, T[]> 
     (acc[key] ??= []).push(row);
     return acc;
   }, {});
+}
+
+function stableMixedKey(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return hash;
 }
 
 function average(values: Array<number | null | undefined>): number | null {

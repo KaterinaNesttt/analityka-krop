@@ -16,7 +16,7 @@ export function MobileBottomBar({
   const items = nav.slice(0, 4);
 
   return (
-    <nav className="md:hidden fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-xl border border-border bg-background/90 p-1 shadow-[0_18px_40px_color-mix(in_oklch,var(--color-foreground)_14%,transparent)] backdrop-blur-xl">
+    <nav className="md:hidden fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-xl border border-border bg-background/90 p-1 shadow-[0_18px_40px_color-mix(in_oklch,var(--color-foreground)_14%,transparent)]">
       {items.map((n) => {
         const active = pathname === n.to || (n.to !== "/dashboard" && pathname.startsWith(n.to));
         const Icon = n.icon;

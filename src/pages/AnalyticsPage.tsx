@@ -72,14 +72,14 @@ export function AnalyticsPage() {
   return (
     <PageShell>
       <PageHeader title="Аналітика">
-        <Button variant={filtersOpen ? "default" : "outline"} size="sm" onClick={() => setFiltersOpen((v) => !v)}>
+        <Button variant={filtersOpen ? "default" : "outline"} size="sm" className="surface-upgrade border-0 text-primary-foreground shadow-none hover:text-primary-foreground" onClick={() => setFiltersOpen((v) => !v)}>
           <SlidersHorizontal className="h-4 w-4 mr-1" />
           Фільтр
         </Button>
       </PageHeader>
 
       {filtersOpen && (
-        <div className="mb-5 rounded-md border border-border/60 bg-muted/20 p-4">
+        <div className="surface-secondary inset-surface mb-5 rounded-[1.25rem] p-4">
           <FiltersBar value={filters} onChange={setFilters} frameless />
         </div>
       )}
@@ -94,7 +94,7 @@ export function AnalyticsPage() {
         <>
           <section className="mb-5 grid gap-4 xl:grid-cols-[1fr_0.7fr]">
             <Card className="overflow-hidden">
-              <CardContent className="bg-[radial-gradient(circle_at_top_left,rgba(212,168,79,0.16),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 md:p-6">
+              <CardContent className="p-5 md:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="text-sm text-muted-foreground">Поточна вибірка</div>
@@ -115,7 +115,7 @@ export function AnalyticsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="surface-alpha">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">Швидкі висновки</CardTitle>
               </CardHeader>
@@ -136,74 +136,74 @@ export function AnalyticsPage() {
 
           <section className="mb-5 grid gap-4 xl:grid-cols-2">
             <ChartCard title="Квартири проти будинків" subtitle="Скільки угод і яка типова ціна">
-              <BarChart data={data.typeComparison} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} width={82} />
-                <Tooltip cursor={{ fill: "rgba(212,168,79,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="value" radius={[0, 6, 6, 0]}>
-                  {data.typeComparison.map((row) => <Cell key={row.label} fill={row.color} />)}
+              <BarChart data={data.typeComparison} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 12 }}>
+                {renderChartVolumeDefs({ id: "analyticsType", colors: Object.fromEntries(data.typeComparison.map((row, index) => [`c${index}`, row.color])), direction: "horizontal" })}
+                <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} width={82} axisLine={false} tickLine={false} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Bar dataKey="value" barSize={30} radius={[0, 18, 18, 0]}>
+                  {data.typeComparison.map((row, index) => <Cell key={row.label} fill={`url(#analyticsType-c${index})`} />)}
                 </Bar>
               </BarChart>
             </ChartCard>
 
             <ChartCard title="Цінові коридори" subtitle="Де зосереджена основна маса угод">
-              <AreaChart data={data.priceBuckets} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
-                <defs>
-                  <linearGradient id="analyticsPrice" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={GOLD} stopOpacity={0.42} />
-                    <stop offset="100%" stopColor={GOLD} stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <Tooltip cursor={{ stroke: GOLD, strokeWidth: 1 }} content={<CleanTooltip />} />
-                <Area type="monotone" dataKey="value" stroke={GOLD} fill="url(#analyticsPrice)" strokeWidth={2} />
+              <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 20, bottom: 12, left: 0 }}>
+                {renderChartAreaDefs({ id: "analyticsPrice", color: GOLD })}
+                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ stroke: GOLD, strokeWidth: 1, strokeOpacity: 0.35 }} content={<CleanTooltip />} />
+                <Area type="monotone" dataKey="value" stroke={GOLD} fill="url(#analyticsPrice-area)" strokeWidth={3} />
               </AreaChart>
             </ChartCard>
           </section>
 
           <section className="mb-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
             <ChartCard title="Райони" subtitle="Рейтинг за кількістю продажів">
-              <BarChart data={data.districtRows} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-border)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <YAxis type="category" dataKey="label" tickFormatter={shortLabel} stroke="var(--color-muted-foreground)" fontSize={11} width={112} />
-                <Tooltip cursor={{ fill: "rgba(212,168,79,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill={GOLD} radius={[0, 6, 6, 0]} />
+              <BarChart data={data.districtRows} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 0 }}>
+                {renderChartVolumeDefs({ id: "analyticsDistrict", colors: { value: GOLD }, direction: "horizontal" })}
+                <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="label" tickFormatter={shortLabel} stroke="var(--color-muted-foreground)" fontSize={11} width={112} axisLine={false} tickLine={false} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Bar dataKey="value" fill="url(#analyticsDistrict-value)" barSize={24} radius={[0, 18, 18, 0]} />
               </BarChart>
             </ChartCard>
 
             <ChartCard title="Площа" subtitle="Окремо видно записи без площі">
-              <BarChart data={data.areaBuckets} margin={{ top: 4, right: 8, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <Tooltip cursor={{ fill: "rgba(212,168,79,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill={SAGE} radius={[6, 6, 0, 0]} />
+              <BarChart data={data.areaBuckets} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
+                {renderChartVolumeDefs({ id: "analyticsArea", colors: { value: SAGE }, direction: "vertical" })}
+                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Bar dataKey="value" fill="url(#analyticsArea-value)" barSize={30} radius={[18, 18, 2, 2]} />
               </BarChart>
             </ChartCard>
           </section>
 
           <section className="mb-5 grid gap-4 xl:grid-cols-2">
             <ChartCard title="Кімнатність квартир" subtitle="Які квартири продаються найчастіше">
-              <BarChart data={data.roomRows} margin={{ top: 4, right: 8, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <Tooltip cursor={{ fill: "rgba(79,195,199,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill={CYAN} radius={[6, 6, 0, 0]} />
+              <BarChart data={data.roomRows} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
+                {renderChartVolumeDefs({ id: "analyticsRooms", colors: { value: CYAN }, direction: "vertical" })}
+                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Bar dataKey="value" fill="url(#analyticsRooms-value)" barSize={30} radius={[18, 18, 2, 2]} />
               </BarChart>
             </ChartCard>
 
             <ChartCard title="Торг від стартової ціни" subtitle="Наскільки часто ціна знижувалась">
-              <BarChart data={data.discountBuckets} margin={{ top: 4, right: 8, bottom: 8, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} />
-                <Tooltip cursor={{ fill: "rgba(212,168,79,0.08)" }} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill={GOLD} radius={[6, 6, 0, 0]} />
+              <BarChart data={data.discountBuckets} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
+                {renderChartVolumeDefs({ id: "analyticsDiscount", colors: { value: GOLD }, direction: "vertical" })}
+                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
+                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Bar dataKey="value" fill="url(#analyticsDiscount-value)" barSize={30} radius={[18, 18, 2, 2]} />
               </BarChart>
             </ChartCard>
           </section>
@@ -352,28 +352,56 @@ function buildTypeRow(label: string, items: Sale[], color: string): ChartDatum &
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactElement }) {
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="surface-flow">
+      <CardHeader className="px-6 pb-1 pt-6">
         <CardTitle className="text-base">{title}</CardTitle>
         <p className="text-xs text-muted-foreground">{subtitle}</p>
       </CardHeader>
-      <CardContent className="h-80">
+      <CardContent className="h-80 rounded-[1.25rem] p-4 pt-0">
         <ResponsiveContainer>{children}</ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
 
+function renderChartVolumeDefs({ id, colors, direction }: { id: string; colors: Record<string, string>; direction: "horizontal" | "vertical" }) {
+  const horizontal = direction === "horizontal";
+  return (
+    <defs>
+      {Object.entries(colors).map(([key, color]) => (
+        <linearGradient key={key} id={`${id}-${key}`} x1="0" y1="0" x2={horizontal ? "1" : "0"} y2={horizontal ? "0" : "1"}>
+          <stop offset="0%" stopColor={color} stopOpacity={0.62} />
+          <stop offset="38%" stopColor={color} stopOpacity={0.92} />
+          <stop offset="70%" stopColor={color} stopOpacity={0.78} />
+          <stop offset="100%" stopColor={color} stopOpacity={0.48} />
+        </linearGradient>
+      ))}
+    </defs>
+  );
+}
+
+function renderChartAreaDefs({ id, color }: { id: string; color: string }) {
+  return (
+    <defs>
+      <linearGradient id={`${id}-area`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor={color} stopOpacity={0.62} />
+        <stop offset="48%" stopColor={color} stopOpacity={0.22} />
+        <stop offset="100%" stopColor={color} stopOpacity={0.03} />
+      </linearGradient>
+    </defs>
+  );
+}
+
 function Metric({ icon, label, value, hint }: { icon: ReactNode; label: string; value: string; hint: string }) {
   return (
-    <Card>
+    <Card className="surface-stat">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm text-muted-foreground">{label}</div>
             <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
           </div>
-          <div className="rounded-md bg-primary/10 p-2 text-primary">{icon}</div>
+          <div className="surface-vault flex h-10 w-10 items-center justify-center rounded-2xl text-primary">{icon}</div>
         </div>
         <div className="mt-3 text-xs text-muted-foreground">{hint}</div>
       </CardContent>
@@ -383,7 +411,7 @@ function Metric({ icon, label, value, hint }: { icon: ReactNode; label: string; 
 
 function SummaryCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border bg-background/45 p-3">
+    <div className="surface-secondary inset-surface rounded-[1.25rem] p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
     </div>
@@ -392,7 +420,7 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
 
 function InsightLine({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border bg-muted/20 px-3 py-2">
+    <div className="surface-market-row flex items-center justify-between gap-3 rounded-[1.4rem] px-4 py-3">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">{icon}<span>{label}</span></div>
       <div className="font-medium tabular-nums">{value}</div>
     </div>
@@ -402,14 +430,14 @@ function InsightLine({ icon, label, value }: { icon: ReactNode; label: string; v
 function Leaderboard({ title, rows, empty }: { title: string; rows: Array<{ label: string; value: number; tooltipRows?: TooltipRow[] }>; empty: string }) {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
-    <Card>
+    <Card className="surface-alpha">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {!rows.length ? <div className="text-sm text-muted-foreground">{empty}</div> : null}
         {rows.map((row) => (
-          <div key={row.label}>
+          <div key={row.label} className="surface-market-row rounded-[1.4rem] px-4 py-3">
             <div className="mb-1 flex items-center justify-between gap-3 text-sm">
               <span className="truncate">{row.label}</span>
               <span className="tabular-nums text-muted-foreground">{fmtNumber(row.value)}</span>
@@ -428,7 +456,7 @@ function CleanTooltip({ active, payload, label }: { active?: boolean; payload?: 
   if (!active || !payload?.length) return null;
   const rows = payload[0]?.payload?.tooltipRows ?? [];
   return (
-    <div className="rounded-md border bg-popover/95 px-3 py-2 text-sm shadow-xl">
+    <div className="glass-edge rounded-2xl bg-popover/95 px-3 py-2 text-sm">
       <div className="mb-1 font-medium">{label}</div>
       <div className="space-y-1">
         {rows.map((row) => (
@@ -445,7 +473,7 @@ function CleanTooltip({ active, payload, label }: { active?: boolean; payload?: 
 function LoadingGrid() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-36 rounded-lg border bg-card/70 animate-pulse" />)}
+      {Array.from({ length: 8 }).map((_, i) => <div key={i} className="surface-stat h-36 rounded-[1.65rem] animate-pulse" />)}
     </div>
   );
 }
