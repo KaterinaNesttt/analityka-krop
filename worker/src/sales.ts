@@ -80,7 +80,19 @@ export async function getSale(req: Request, env: Env, id: string): Promise<Respo
   const row = await env.DB.prepare(`SELECT ${fields} FROM sales WHERE id = ?`).bind(id).first<any>();
   if (!row) return err(404, 'Не знайдено', env, req);
   if (forUser && row.status !== 'approved') return err(404, 'Не знайдено', env, req);
-  return json({ sale: row }, {}, env, req);
+  const district = await env.DB.prepare(
+    `SELECT AVG(final_price) AS avg_price,
+            AVG(CASE WHEN total_area > 0 THEN final_price / total_area END) AS avg_price_per_m2
+     FROM sales WHERE status = 'approved' AND district = ?`,
+  ).bind(row.district).first<any>();
+  const rooms = row.rooms == null
+    ? { avg_price: null, avg_price_per_m2: null }
+    : await env.DB.prepare(
+      `SELECT AVG(final_price) AS avg_price,
+              AVG(CASE WHEN total_area > 0 THEN final_price / total_area END) AS avg_price_per_m2
+       FROM sales WHERE status = 'approved' AND rooms = ?`,
+    ).bind(row.rooms).first<any>();
+  return json({ sale: row, comparison: { district, rooms } }, {}, env, req);
 }
 
 export async function createSale(req: Request, env: Env): Promise<Response> {

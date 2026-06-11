@@ -61,7 +61,6 @@ export function AppSidebar({
       <div className="space-y-3 p-4">
         <div className="asset-team-pill px-4 py-3 text-xs text-sidebar-foreground/76">
           <div className="truncate font-medium text-sidebar-foreground">{user.name ?? user.email}</div>
-          <div className="mt-0.5">{roleLabel(user.role)}</div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="asset-cta-pill flex-1 border-0 bg-transparent text-sidebar-foreground shadow-none hover:bg-transparent hover:text-sidebar-foreground" onClick={onToggleTheme}>

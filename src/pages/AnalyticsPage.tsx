@@ -63,8 +63,8 @@ export function AnalyticsPage() {
   const [filters, setFilters] = useState<SalesFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const sales = useQuery({
-    queryKey: ["analytics-sales", filters],
-    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { ...filters, limit: 1000, sort: "sale_date_desc" } }),
+    queryKey: ["approved-sales", filters, "sale_date_desc"],
+    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { status: "approved", ...filters, limit: 1000, sort: "sale_date_desc" } }),
   });
 
   const data = useMemo(() => buildAnalytics(sales.data?.sales ?? [], filters), [sales.data, filters]);

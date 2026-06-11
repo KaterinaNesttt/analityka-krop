@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,11 +11,12 @@ import { useAuth } from "@/lib/auth-context";
 
 export function UsersPage() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const q = useQuery({ queryKey: ["users"], queryFn: () => api<{ users: any[] }>("/api/users") });
 
-  const approve = async (id: string) => { try { await api(`/api/users/${id}/approve`, { method: "PATCH" }); toast.success("Підтверджено"); q.refetch(); } catch (e: any) { toast.error(e.message); } };
-  const block = async (id: string, unblock = false) => { try { await api(`/api/users/${id}/block`, { method: "PATCH", body: { unblock } }); toast.success("Готово"); q.refetch(); } catch (e: any) { toast.error(e.message); } };
-  const setRole = async (id: string, role: string) => { try { await api(`/api/users/${id}/role`, { method: "PATCH", body: { role } }); toast.success("Роль оновлено"); q.refetch(); } catch (e: any) { toast.error(e.message); } };
+  const approve = async (id: string) => { try { await api(`/api/users/${id}/approve`, { method: "PATCH" }); toast.success("Підтверджено"); queryClient.setQueryData<{ users: any[] }>(["users"], (current) => current ? { ...current, users: current.users.map((u) => u.id === id ? { ...u, status: "approved" } : u) } : current); } catch (e: any) { toast.error(e.message); } };
+  const block = async (id: string, unblock = false) => { try { await api(`/api/users/${id}/block`, { method: "PATCH", body: { unblock } }); toast.success("Готово"); queryClient.setQueryData<{ users: any[] }>(["users"], (current) => current ? { ...current, users: current.users.map((u) => u.id === id ? { ...u, status: unblock ? "approved" : "blocked" } : u) } : current); } catch (e: any) { toast.error(e.message); } };
+  const setRole = async (id: string, role: string) => { try { await api(`/api/users/${id}/role`, { method: "PATCH", body: { role } }); toast.success("Роль оновлено"); queryClient.setQueryData<{ users: any[] }>(["users"], (current) => current ? { ...current, users: current.users.map((u) => u.id === id ? { ...u, role } : u) } : current); } catch (e: any) { toast.error(e.message); } };
 
   return (
     <PageShell>

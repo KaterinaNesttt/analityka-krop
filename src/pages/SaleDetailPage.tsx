@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell, StatCard } from "@/components/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,19 +13,12 @@ export function SaleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["sale", id],
-    queryFn: () => api<{ sale: any }>(`/api/sales/${id}`),
+    queryFn: () => api<{ sale: any; comparison?: any }>(`/api/sales/${id}`),
     enabled: !!id,
-  });
-  const districtsQ = useQuery({
-    queryKey: ["d-cmp"],
-    queryFn: () => api<{ data: any[] }>("/api/analytics/districts"),
-  });
-  const roomsQ = useQuery({
-    queryKey: ["r-cmp"],
-    queryFn: () => api<{ data: any[] }>("/api/analytics/rooms"),
   });
 
   if (isLoading) return <PageShell><div className="text-muted-foreground">Завантаження…</div></PageShell>;
@@ -33,14 +26,17 @@ export function SaleDetailPage() {
 
   const s = data.sale;
   const ppm = s.total_area ? s.final_price / s.total_area : null;
-  const districtAvg = districtsQ.data?.data.find((d) => d.district === s.district);
-  const roomsAvg = roomsQ.data?.data.find((d) => d.rooms === s.rooms);
+  const districtAvg = data.comparison?.district;
+  const roomsAvg = data.comparison?.rooms;
 
   const moderate = async (action: "approve" | "reject" | "duplicate") => {
     try {
       await api(`/api/sales/${id}/${action}`, { method: "PATCH" });
       toast.success("Статус оновлено");
-      refetch();
+      queryClient.setQueryData<{ sale: any; comparison?: any }>(["sale", id], (current) => current ? { ...current, sale: { ...current.sale, status: action } } : current);
+      queryClient.invalidateQueries({ queryKey: ["sales"], refetchType: "none" });
+      queryClient.invalidateQueries({ queryKey: ["approved-sales"], refetchType: "none" });
+      queryClient.invalidateQueries({ queryKey: ["mod-list"], refetchType: "none" });
     } catch (e: any) { toast.error(e.message); }
   };
   const del = async () => {

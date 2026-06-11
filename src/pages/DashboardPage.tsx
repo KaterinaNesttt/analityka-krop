@@ -88,8 +88,8 @@ const BUCKETS = [
 
 export function DashboardPage() {
   const sales = useQuery({
-    queryKey: ["dashboard-sales"],
-    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { limit: 1000, sort: "sale_date_desc" } }),
+    queryKey: ["approved-sales", {}, "sale_date_desc"],
+    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { status: "approved", limit: 1000, sort: "sale_date_desc" } }),
   });
 
   const data = useMemo(() => buildDashboardData(sales.data?.sales ?? []), [sales.data]);
@@ -119,12 +119,12 @@ export function DashboardPage() {
   return (
     <PageShell>
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <div className="surface-primary glass-edge p-5 md:p-6">
+        <div className="surface-primary glass-edge p-1 md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Підтверджена база</div>
               <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                <span className="text-5xl font-semibold tabular-nums">{fmtNumber(data.total)}</span>
+                <span className="text-4xl font-semibold tabular-nums">{fmtNumber(data.total)}</span>
                 <span className="text-lg text-muted-foreground">угод</span>
               </div>
             </div>

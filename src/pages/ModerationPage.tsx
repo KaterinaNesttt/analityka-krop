@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 export function ModerationPage() {
   const [source, setSource] = useState<string>("_all");
+  const queryClient = useQueryClient();
   const q = useQuery({
     queryKey: ["mod-list", source],
     queryFn: () => api<{ sales: any[] }>("/api/sales", { query: { status: "pending", source_type: source === "_all" ? undefined : source } }),
@@ -20,7 +21,12 @@ export function ModerationPage() {
   const act = async (id: string, action: "approve" | "reject" | "duplicate") => {
     try {
       await api(`/api/sales/${id}/${action}`, { method: "PATCH" });
-      toast.success("Готово"); q.refetch();
+      toast.success("Готово");
+      queryClient.setQueryData<{ sales: any[] }>(["mod-list", source], (current) => current ? { ...current, sales: current.sales.filter((sale) => sale.id !== id) } : current);
+      queryClient.setQueryData<{ sale: any; comparison?: any }>(["sale", id], (current) => current ? { ...current, sale: { ...current.sale, status: action } } : current);
+      queryClient.invalidateQueries({ queryKey: ["sales"], refetchType: "none" });
+      queryClient.invalidateQueries({ queryKey: ["approved-sales"], refetchType: "none" });
+      queryClient.invalidateQueries({ queryKey: ["mod-list"], refetchType: "none" });
     } catch (e: any) { toast.error(e.message); }
   };
 
