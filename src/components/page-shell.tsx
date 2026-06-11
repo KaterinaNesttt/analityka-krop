@@ -36,5 +36,5 @@ export function PageHeader({ title, description, children }: { title: string; de
 }
 
 export function PageShell({ children }: { children: ReactNode }) {
-  return <div className="p-4 md:p-8 max-w-7xl mx-auto">{children}</div>;
+  return <div className="p-4 md:p-8 max-w-5xl mx-auto">{children}</div>;
 }

@@ -161,7 +161,7 @@ export function DashboardPage() {
       </section>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card className="surface-flow">
+        <Card className="surface-gas-shell rounded-[4.75rem]">
           <CardHeader className="px-6 pb-1 pt-6">
             <CardTitle className="text-base">Склад бази</CardTitle>
           </CardHeader>
@@ -181,7 +181,7 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-<Card className="surface-stat-liq rounded-[4.15rem]">
+<Card className="surface-flow rounded-[4.15rem]">
   <CardHeader className="px-6 pb-1 pt-6">
     <CardTitle className="text-base">Найактивніші локації</CardTitle>
   </CardHeader>
@@ -240,8 +240,8 @@ export function DashboardPage() {
       </section>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="surface-flow">
-          <CardHeader className="px-6 pb-1 pt-6">
+        <Card className="surface-gas-shell rounded-[6.75rem]">
+          <CardHeader className="px-6 pb-1 pt-18">
             <CardTitle className="text-base">Цінові коридори</CardTitle>
           </CardHeader>
           <CardContent className="h-72 rounded-[1.25rem] p-4 pt-0">
@@ -437,7 +437,7 @@ function ProgressRow({ label, value, total }: { label: string; value: number; to
 
 function InsightCard({ icon, title, value, hint }: { icon: ReactNode; title: string; value: string; hint: string }) {
   return (
-    <Card className="surface-vault">
+    <Card className="surface-market">
       <CardContent className="p-4">
         <div className="mb-3 flex items-center gap-2 text-muted-foreground">
           {icon}
@@ -453,7 +453,7 @@ function InsightCard({ icon, title, value, hint }: { icon: ReactNode; title: str
 function Leaderboard({ title, rows, empty }: { title: string; rows: { label: string; value: number }[]; empty: string }) {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
-    <Card className="surface-alpha">
+    <Card className="surface">
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>

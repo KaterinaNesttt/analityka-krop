@@ -216,6 +216,11 @@
     border-radius: 2rem;
   }
 
+    .surface-gas-shell {
+    --surface-image: url("../приклад/gas-shell.png");
+    border-radius: 2rem;
+  }
+
   .surface-upgrade {
     --surface-image: url("../приклад/upgrade-shell.png");
     --png-fit-left: 3.59%;
