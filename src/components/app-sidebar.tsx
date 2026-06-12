@@ -29,7 +29,7 @@ export function AppSidebar({
   const navigate = useNavigate();
 
   return (
-    <aside className={`asset-sidebar flex max-h-150 max-w-36 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground shadow-[18px_18px_16px_black]  ${className}`}>
+    <aside className={`asset-sidebar flex max-h-190 max-w-46 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground shadow-[18px_18px_16px_black]  ${className}`}>
       <div className="px-3 h-16 flex items-center gap-3 ">
         <div>
           <div className="font-semibold leading-tight text-white tracking-[0.08em]">Аналітика</div>
@@ -45,7 +45,7 @@ export function AppSidebar({
               <Link
                 key={n.to}
                 to={n.to}
-                className={`flex w-full items-center gap-2 px-4 text-xs font-medium transition-[transform,opacity] duration-200 active:scale-[0.98] ${
+                className={`flex w-full items-center gap-2 px-4 text-s font-medium transition-[transform,opacity] duration-200 active:scale-[0.98] ${
                   active
                     ? "asset-active-pill text-sidebar-primary-foreground"
                     : "min-h-11 text-sidebar-foreground hover:text-sidebar-accent-foreground"

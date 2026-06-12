@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -10,14 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/lib/format";
 import { ExternalLink, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { Card } from "@/components/ui/card";
 
 export function SalesListPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const [filters, setFilters] = useState<SalesFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState("sale_date_desc");
-  const [mode, setMode] = useState<"compact" | "detailed">("compact");
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["sales", filters, sort],
@@ -44,10 +46,7 @@ export function SalesListPage() {
           <SlidersHorizontal className="h-4 w-4 mr-1" />
           Фільтр
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setMode(mode === "compact" ? "detailed" : "compact")}>
-          {mode === "compact" ? <LayoutGrid className="h-4 w-4 mr-1" /> : <List className="h-4 w-4 mr-1" />}
-          {mode === "compact" ? "Детально" : "Компактно"}
-        </Button>
+
       </PageHeader>
 
       {filtersOpen && (
@@ -56,7 +55,7 @@ export function SalesListPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-md border">
+      <div className="overflow-x-auto rounded-md bg-secondary/70 border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
               <tr>
@@ -65,10 +64,8 @@ export function SalesListPage() {
                 <th className="text-left p-3">Район</th>
                 <th className="text-left p-3">Кімн.</th>
                 <th className="text-left p-3">Площа</th>
-                {mode === "detailed" && <th className="text-left p-3">Поверх</th>}
+                <th className="text-left p-3">Поверх</th>
                 <th className="text-right p-3">Ціна</th>
-                <th className="text-right p-3">$/м²</th>
-                {isStaff && <th className="text-left p-3">Статус</th>}
                 <th className="p-3"></th>
               </tr>
             </thead>
@@ -80,20 +77,18 @@ export function SalesListPage() {
                 <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Немає даних</td></tr>
               )}
               {rows.map((r) => (
-                <tr key={r.id} className="border-t hover:bg-muted/30">
+                <tr onClick={() => navigate(`/sales/${r.id}`)} key={r.id} className="border-t cursor-pointer hover:bg-muted/30">
                   <td className="p-3 whitespace-nowrap">{fmtMonthYear(r.sale_date)}</td>
                   <td className="p-3">{r.building_type ?? propertyTypeLabel(r.property_type)}</td>
                   <td className="p-3">{r.district}</td>
                   <td className="p-3">{r.rooms ?? "—"}</td>
                   <td className="p-3">{fmtArea(r.total_area)}</td>
-                  {mode === "detailed" && <td className="p-3">{r.floor ? `${r.floor}/${r.floors_total ?? "?"}` : "—"}</td>}
+                   <td className="p-3">{r.floor ? `${r.floor}/${r.floors_total ?? "?"}` : "—"}</td>
                   <td className="p-3 text-right font-medium">{fmtMoney(r.final_price, r.currency)}</td>
-                  <td className="p-3 text-right">{r.total_area ? fmtMoney(r.final_price / r.total_area, r.currency) : "—"}</td>
-                  {isStaff && <td className="p-3"><Badge variant={r.status === "approved" ? "default" : "secondary"}>{statusLabel(r.status)}</Badge></td>}
                   <td className="p-3 text-right">
-                    <Link to={`/sales/${r.id}`} className="text-primary hover:underline inline-flex items-center gap-1">
+                    <button className="text-primary  inline-flex items-center gap-1">
                       Деталі <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    </button>
                   </td>
                 </tr>
               ))}

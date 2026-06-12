@@ -119,14 +119,16 @@ export function DashboardPage() {
   return (
     <PageShell>
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <div className="surface-primary glass-edge p-1 md:p-6">
+        <Card className ="surface-primary bg-secondary glass-edge p-1 md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="text-sm text-muted-foreground">Підтверджена база</div>
-              <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
-                <span className="text-4xl font-semibold tabular-nums">{fmtNumber(data.total)}</span>
-                <span className="text-lg text-muted-foreground">угод</span>
-              </div>
+              
+                <div className="text-sm text-muted-foreground">Підтверджена база</div>
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                  <span className="text-4xl font-semibold tabular-nums">{fmtNumber(data.total)}</span>
+                  <span className="text-lg text-muted-foreground">угод</span>
+                </div>
+              
             </div>
             <div className="flex flex-wrap gap-2">
               {data.yearBadges.map((item) => (
@@ -139,7 +141,8 @@ export function DashboardPage() {
             <HeroFact label="Медіана" value={fmtMoney(data.medianPrice)} />
             <HeroFact label="Площа є у базі" value={`${fmtNumber(data.areaCoverage)}%`} />
           </div>
-        </div>
+        </Card>
+        
 
         <Card className="surface-upgrade">
           <CardHeader className="pb-2">
@@ -153,19 +156,19 @@ export function DashboardPage() {
         </Card>
       </section>
 
-      <section className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon={<Home className="h-5 w-5" />} label="Квартири" value={fmtNumber(data.apartments.count)} hint={`середня ${fmtMoney(data.apartments.avgPrice)}`} />
-        <MetricCard icon={<Building2 className="h-5 w-5" />} label="Будинки" value={fmtNumber(data.houses.count)} hint={`середня ${fmtMoney(data.houses.avgPrice)}`} />
-        <MetricCard icon={<AreaIcon className="h-5 w-5" />} label="Середня за м²" value={fmtMoney(data.avgPricePerM2)} hint={`${fmtNumber(data.withArea)} записів з площею`} />
-        <MetricCard icon={<PiggyBank className="h-5 w-5" />} label="Середній торг" value={data.avgDiscount == null ? "—" : `${fmtNumber(data.avgDiscount, 1)}%`} hint="від стартової ціни" />
-      </section>
+      <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <MetricCard icon={<Building2 className="h-5 w-5" />} label="Квартири" value={fmtNumber(data.apartments.count)} hint={""} />
+        <MetricCard icon={<Home className="h-5 w-5" />} label="Будинки" value={fmtNumber(data.houses.count)} hint={""} />
+        <MetricCard icon={<AreaIcon className="h-5 w-5" />} label="Середня за м²" value={fmtMoney(data.avgPricePerM2)} hint={""} />
+        <MetricCard icon={<PiggyBank className="h-5 w-5" />} label="Середній торг" value={data.avgDiscount == null ? "—" : `${fmtNumber(data.avgDiscount, 1)}%`} hint={""} />
+      </div>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-        <Card className="surface-gas-shell rounded-[4.75rem]">
+        <Card className="surface-gas-shell ">
           <CardHeader className="px-3 pb-1 pt-5">
             <CardTitle className="text-base text-center text-muted-foreground md:text-lg">Склад бази</CardTitle>
           </CardHeader>
-          <CardContent className="h-62 rounded-[1.25rem] p-2 pt-0">
+          <CardContent className="h-62 p-2 pt-0">
             <ResponsiveContainer>
               <BarChart data={data.typeData} layout="vertical" margin={{ top: 14, right: 14, bottom: 14, left: 2 }}>
                 {renderChartVolumeDefs({ id: "dashType", colors: TYPE_COLORS, direction: "horizontal" })}
@@ -181,70 +184,70 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-<Card className="surface-flow rounded-[4.15rem]">
-  <CardHeader className="px-6 pb-1 pt-6">
-    <CardTitle className="text-base text-center text-muted-foreground">Найактивніші локації</CardTitle>
-  </CardHeader>
+        <Card className="surface-flow bg-secondary">
+          <CardHeader className="px-6 pb-1 pt-6">
+            <CardTitle className="text-base text-center text-muted-foreground">Найактивніші локації</CardTitle>
+          </CardHeader>
 
-  <CardContent className="h-62 rounded-[1.25rem] p-2 pt-0">
-    <ResponsiveContainer>
-<BarChart
-  data={data.topDistricts}
-  layout="horizontal"
-  margin={{ top: 14, right: 34, bottom: 6, left: 1 }}
->
-        {renderChartVolumeDefs({
-          id: "dashDistrict",
-          colors: { count: "#d4a84f" },
-          direction: "horizontal",
-        })}
+          <CardContent className="h-62 p-2 pt-0">
+            <ResponsiveContainer>
+              <BarChart
+                data={data.topDistricts}
+                layout="horizontal"
+                margin={{ top: 14, right: 34, bottom: 6, left: 1 }}
+              >
+                {renderChartVolumeDefs({
+                  id: "dashDistrict",
+                  colors: { count: "#d4a84f" },
+                  direction: "horizontal",
+                })}
 
-        <CartesianGrid
-          strokeDasharray="2 7"
-          horizontal={false}
-          stroke="rgba(255,255,255,0.07)"
-        />
+                <CartesianGrid
+                  strokeDasharray="2 7"
+                  horizontal={false}
+                  stroke="rgba(255,255,255,0.07)"
+                />
 
-        <YAxis
-          type="number"
-          stroke="var(--color-muted-foreground)"
-          fontSize={12}
-          allowDecimals={false}
-          axisLine={false}
-          tickLine={false}
-        />
+                <YAxis
+                  type="number"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={12}
+                  allowDecimals={false}
+                  axisLine={false}
+                  tickLine={false}
+                />
 
-<XAxis
-  type="category"
-  dataKey="district"
-  hide
-/>
+                <XAxis
+                  type="category"
+                  dataKey="district"
+                  hide
+                />
 
-        <Tooltip cursor={false} content={<CleanTooltip />} />
+                <Tooltip cursor={false} content={<CleanTooltip />} />
 
-<Bar
-  dataKey="count"
-  fill="url(#dashDistrict-count)"
-  barSize={24}
-  radius={[18, 18, 0, 0]}
->
-  <LabelList
-    dataKey="district"
-    content={renderDistrictLabel}
-  />
-</Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </CardContent>
-</Card>
+                <Bar
+                  dataKey="count"
+                  fill="url(#dashDistrict-count)"
+                  barSize={24}
+                  radius={[18, 18, 0, 0]}
+                >
+                  <LabelList
+                    dataKey="district"
+                    content={renderDistrictLabel}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </section>
 
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="surface-flow rounded-[4.75rem]">
+        <Card className="surface-flow">
           <CardHeader className="px-2 pb-1 pt-8">
             <CardTitle className="text-base text-center text-muted-foreground">Цінові коридори</CardTitle>
           </CardHeader>
-          <CardContent className="h-62 rounded-[1.25rem] p-1 pt-0">
+          <CardContent className="h-62 p-1 pt-0">
             <ResponsiveContainer>
               <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 30, bottom: 12, left: 0 }}>
                 {renderChartAreaDefs({ id: "dashPrice", color: "#d4a84f" })}
@@ -368,16 +371,17 @@ function buildDashboardData(input: Sale[]) {
 
 function MetricCard({ icon, label, value, hint }: { icon: ReactNode; label: string; value: string; hint: string }) {
   return (
-    <Card className="surface-market overflow-hidden">
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between gap-3">
+    <Card className="surface-vault overflow-hidden">
+      <CardContent className="glass-outpress-edge p-3">
+        <div className=" flex items-start justify-between  gap-3">
+          <div>
+          <div className=" flex h-10 w-10 items-center justify-center text-primary">{icon}</div>
+          <div className="text-sm text-muted-foreground">{label}</div>
+          </div>
           <div className="min-w-0">
-            <div className="text-sm text-muted-foreground">{label}</div>
             <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
           </div>
-          <div className="surface-vault flex h-10 w-10 items-center justify-center rounded-2xl text-primary">{icon}</div>
         </div>
-        <div className="mt-3 text-xs text-muted-foreground">{hint}</div>
       </CardContent>
     </Card>
   );
@@ -413,7 +417,7 @@ function renderChartAreaDefs({ id, color }: { id: string; color: string }) {
 
 function HeroFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="surface-market-row inset-surface rounded-[1.25rem] p-3">
+    <div className="surface-market-row rounded-3xl  glass-pressed-edge p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
     </div>
@@ -444,7 +448,7 @@ function InsightCard({ icon, title, value, hint }: { icon: ReactNode; title: str
           <span className="text-sm">{title}</span>
         </div>
         <div className="text-2xl font-semibold tabular-nums">{value}</div>
-        
+
       </CardContent>
     </Card>
   );

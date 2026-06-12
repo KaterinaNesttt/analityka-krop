@@ -72,16 +72,16 @@ export function AnalyticsPage() {
   return (
     <PageShell>
       <PageHeader title="Аналітика">
-        <Button variant={filtersOpen ? "default" : "outline"} size="sm" className="surface-upgrade border-0 text-primary-foreground shadow-none hover:text-primary-foreground" onClick={() => setFiltersOpen((v) => !v)}>
+        <Button variant={filtersOpen ? "default" : "outline"} size="sm" className="surface-upgrade border-0 text-foreground shadow-none hover:text-primary-foreground" onClick={() => setFiltersOpen((v) => !v)}>
           <SlidersHorizontal className="h-4 w-4 mr-1" />
           Фільтр
         </Button>
       </PageHeader>
 
       {filtersOpen && (
-        <div className="surface-secondary inset-surface mb-5 rounded-[1.25rem] p-4">
+        <Card className="surface-secondary glass-edge inset-surface mb-5 rounded-[1.25rem] p-4">
           <FiltersBar value={filters} onChange={setFilters} frameless />
-        </div>
+        </Card>
       )}
 
       {sales.isLoading ? (
@@ -107,7 +107,7 @@ export function AnalyticsPage() {
                     {data.activeFilterLabels.length ? data.activeFilterLabels.map((label) => <Badge key={label} variant="secondary" className="rounded-md">{label}</Badge>) : <Badge variant="secondary" className="rounded-md">Усі дані</Badge>}
                   </div>
                 </div>
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="mt-6 grid gap-3  sm:grid-cols-3">
                   <SummaryCell label="Медіанна ціна" value={fmtMoney(data.medianPrice)} />
                   <SummaryCell label="Середня ціна" value={fmtMoney(data.avgPrice)} />
                   <SummaryCell label="Діапазон" value={`${fmtMoney(data.minPrice)} - ${fmtMoney(data.maxPrice)}`} />
@@ -117,7 +117,7 @@ export function AnalyticsPage() {
 
             <Card className="surface-alpha">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">Швидкі висновки</CardTitle>
+                <CardTitle className="text-base">Швидка статистика</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <InsightLine icon={<Home className="h-4 w-4" />} label="Квартири" value={`${fmtNumber(data.apartmentCount)} угод`} />
@@ -128,14 +128,14 @@ export function AnalyticsPage() {
           </section>
 
           <section className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <Metric icon={<BadgeDollarSign className="h-5 w-5" />} label="Ціна за м²" value={fmtMoney(data.avgPricePerM2)} hint={`${fmtNumber(data.withArea)} записів з площею`} />
-            <Metric icon={<MapPinned className="h-5 w-5" />} label="Найактивніший район" value={data.topDistrict?.label ?? "—"} hint={data.topDistrict ? `${fmtNumber(data.topDistrict.value)} угод` : "Немає даних"} />
-            <Metric icon={<DoorOpen className="h-5 w-5" />} label="Найчастіша кімнатність" value={data.topRooms?.label ?? "—"} hint={data.topRooms ? `${fmtNumber(data.topRooms.value)} квартир` : "Немає даних"} />
-            <Metric icon={<SlidersHorizontal className="h-5 w-5" />} label="Без площі" value={fmtNumber(data.withoutArea)} hint="не входять у розрахунок за м²" />
+            <Metric icon={<BadgeDollarSign className="h-5 w-5" />} label="Ціна за м²" value={fmtMoney(data.avgPricePerM2)} hint=""  />
+            <Metric icon={<MapPinned className="h-5 w-5" />} label="Найактивніший район" value={data.topDistrict?.label ?? "—"} hint=""  />
+            <Metric icon={<DoorOpen className="h-5 w-5" />} label="Найчастіша кімнатність" value={data.topRooms?.label ?? "—"} hint=""  />
+            <Metric icon={<SlidersHorizontal className="h-5 w-5" />} label="Без площі" value={fmtNumber(data.withoutArea)} hint="" />
           </section>
 
           <section className="mb-5 grid gap-4 xl:grid-cols-2">
-            <ChartCard title="Квартири проти будинків" subtitle="Скільки угод і яка типова ціна">
+            <ChartCard title="Квартири проти будинків" subtitle="">
               <BarChart data={data.typeComparison} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 12 }}>
                 {renderChartVolumeDefs({ id: "analyticsType", colors: Object.fromEntries(data.typeComparison.map((row, index) => [`c${index}`, row.color])), direction: "horizontal" })}
                 <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
@@ -148,7 +148,7 @@ export function AnalyticsPage() {
               </BarChart>
             </ChartCard>
 
-            <ChartCard title="Цінові коридори" subtitle="Де зосереджена основна маса угод">
+            <ChartCard title="Цінові коридори" subtitle="">
               <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 20, bottom: 12, left: 0 }}>
                 {renderChartAreaDefs({ id: "analyticsPrice", color: GOLD })}
                 <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
@@ -161,7 +161,7 @@ export function AnalyticsPage() {
           </section>
 
           <section className="mb-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-            <ChartCard title="Райони" subtitle="Рейтинг за кількістю продажів">
+            <ChartCard title="Райони" subtitle="">
               <BarChart data={data.districtRows} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 0 }}>
                 {renderChartVolumeDefs({ id: "analyticsDistrict", colors: { value: GOLD }, direction: "horizontal" })}
                 <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
@@ -172,7 +172,7 @@ export function AnalyticsPage() {
               </BarChart>
             </ChartCard>
 
-            <ChartCard title="Площа" subtitle="Окремо видно записи без площі">
+            <ChartCard title="Площа" subtitle="">
               <BarChart data={data.areaBuckets} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
                 {renderChartVolumeDefs({ id: "analyticsArea", colors: { value: SAGE }, direction: "vertical" })}
                 <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
@@ -185,7 +185,7 @@ export function AnalyticsPage() {
           </section>
 
           <section className="mb-5 grid gap-4 xl:grid-cols-2">
-            <ChartCard title="Кімнатність квартир" subtitle="Які квартири продаються найчастіше">
+            <ChartCard title="Кімнатність квартир" subtitle="">
               <BarChart data={data.roomRows} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
                 {renderChartVolumeDefs({ id: "analyticsRooms", colors: { value: CYAN }, direction: "vertical" })}
                 <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
@@ -196,7 +196,7 @@ export function AnalyticsPage() {
               </BarChart>
             </ChartCard>
 
-            <ChartCard title="Торг від стартової ціни" subtitle="Наскільки часто ціна знижувалась">
+            <ChartCard title="Торг від стартової ціни" subtitle="">
               <BarChart data={data.discountBuckets} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
                 {renderChartVolumeDefs({ id: "analyticsDiscount", colors: { value: GOLD }, direction: "vertical" })}
                 <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
@@ -411,7 +411,7 @@ function Metric({ icon, label, value, hint }: { icon: ReactNode; label: string; 
 
 function SummaryCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="surface-market-row inset-surface rounded-[1.25rem] p-3">
+    <div className="surface-market-row glass-pressed-edge inset-surface rounded-[1.25rem] p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-1 text-base font-semibold tabular-nums">{value}</div>
     </div>
@@ -420,7 +420,7 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
 
 function InsightLine({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="surface-market-row flex items-center justify-between gap-3 rounded-[1.4rem] px-4 py-3">
+    <div className="surface-market-row glass-pressed-edge flex items-center justify-between gap-3 rounded-[1.4rem] px-4 py-3">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">{icon}<span>{label}</span></div>
       <div className="font-medium tabular-nums">{value}</div>
     </div>
