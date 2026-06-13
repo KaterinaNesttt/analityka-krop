@@ -2,8 +2,10 @@ import type { Env } from './types';
 import { json, err, uid, nowIso } from './utils';
 import { requireApproved, requireRole } from './middleware';
 
-const PUBLIC_FIELDS = `id, district, floor, characteristics, sale_term,
-  initial_price, final_price, comment, status, created_at`;
+
+const PUBLIC_FIELDS = `id, property_type, district, rooms, total_area,
+  floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
+  initial_price, final_price, currency, sale_date, source_type, comment, status, created_at`;
 const STAFF_FIELDS = PUBLIC_FIELDS + ', updated_at';
 
 export interface SaleFilters {
