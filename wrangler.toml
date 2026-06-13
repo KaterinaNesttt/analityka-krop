@@ -10,5 +10,10 @@ database_name = "anal"
 database_id = "1cdd05a3-11b0-447d-ae91-ac0bcfff20d0"
 migrations_dir = "migrations"
 
+[observability.logs]
+enabled = false
+invocation_logs = true
+
+
 [vars]
 ALLOWED_ORIGIN = "https://analityka-krop.pages.dev,http://localhost:8080"
