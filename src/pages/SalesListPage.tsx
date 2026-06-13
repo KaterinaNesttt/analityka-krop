@@ -5,7 +5,13 @@ import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { FiltersBar, type SalesFilters } from "@/components/filters-bar";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { fmtMoney } from "@/lib/format";
 import { SlidersHorizontal } from "lucide-react";
 
@@ -15,7 +21,6 @@ export function SalesListPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sort, setSort] = useState("created_at_desc");
 
-
   const { data, isLoading } = useQuery({
     queryKey: ["sales", filters, sort],
     queryFn: () => api<{ sales: any[] }>("/api/sales", { query: { ...filters, sort } }),
@@ -23,7 +28,8 @@ export function SalesListPage() {
 
   const { data: districtData } = useQuery({
     queryKey: ["sales-district-options"],
-    queryFn: () => api<{ sales: any[] }>("/api/sales", { query: { sort: "district", limit: 1000 } }),
+    queryFn: () =>
+      api<{ sales: any[] }>("/api/sales", { query: { sort: "district", limit: 1000 } }),
   });
 
   const rows = data?.sales ?? [];
@@ -41,11 +47,15 @@ export function SalesListPage() {
       <div className="mb-4 hidden items-center justify-between gap-3 rounded-md border border-white/10 bg-black/35 px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur-md md:flex">
         <div>
           <div className="text-sm font-medium text-foreground">База продажів</div>
-          <div className="text-xs text-muted-foreground">{isLoading ? "Завантаження…" : `${rows.length} записів`}</div>
+          <div className="text-xs text-muted-foreground">
+            {isLoading ? "Завантаження…" : `${rows.length} записів`}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="w-44 border-white/10 bg-black/30"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-44 border-white/10 bg-black/30">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="created_at_desc">Новіші</SelectItem>
               <SelectItem value="created_at_asc">Старіші</SelectItem>
@@ -54,7 +64,11 @@ export function SalesListPage() {
               <SelectItem value="district">За Район/ЖК</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant={filtersOpen ? "default" : "outline"} size="sm" onClick={() => setFiltersOpen((v) => !v)}>
+          <Button
+            variant={filtersOpen ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFiltersOpen((v) => !v)}
+          >
             <SlidersHorizontal className="h-4 w-4 mr-1" />
             Фільтр
           </Button>
@@ -63,7 +77,9 @@ export function SalesListPage() {
 
       <div className="mb-4 flex items-center gap-2 md:hidden">
         <Select value={sort} onValueChange={setSort}>
-          <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-44">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="created_at_desc">Новіші</SelectItem>
             <SelectItem value="created_at_asc">Старіші</SelectItem>
@@ -72,7 +88,11 @@ export function SalesListPage() {
             <SelectItem value="district">За Район/ЖК</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant={filtersOpen ? "default" : "outline"} size="sm" onClick={() => setFiltersOpen((v) => !v)}>
+        <Button
+          variant={filtersOpen ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFiltersOpen((v) => !v)}
+        >
           <SlidersHorizontal className="h-4 w-4 mr-1" />
           Фільтр
         </Button>
@@ -80,7 +100,12 @@ export function SalesListPage() {
 
       {filtersOpen && (
         <div className="mb-4 rounded-md border border-white/10 bg-black/40 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24)] backdrop-blur-md md:p-5">
-          <FiltersBar value={filters} onChange={setFilters} districtOptions={districtOptions} frameless />
+          <FiltersBar
+            value={filters}
+            onChange={setFilters}
+            districtOptions={districtOptions}
+            frameless
+          />
         </div>
       )}
 
@@ -109,21 +134,45 @@ export function SalesListPage() {
             </thead>
             <tbody className="divide-y divide-white/8">
               {isLoading && (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Завантаження…</td></tr>
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    Завантаження…
+                  </td>
+                </tr>
               )}
               {!isLoading && rows.length === 0 && (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Немає даних</td></tr>
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    Немає даних
+                  </td>
+                </tr>
               )}
               {rows.map((r) => (
-                <tr onClick={() => navigate(`/sales/${r.id}`)} key={r.id} className="cursor-pointer odd:bg-white/2.5 transition-colors hover:bg-primary/10">
-                  <td className="px-4 py-4 align-top font-semibold text-foreground">{r.district}</td>
-                  <td className="px-4 py-4 align-top whitespace-nowrap text-muted-foreground">{r.floor ?? "—"}</td>
-                  <td className="px-4 py-4 align-top">
-                    <div className="line-clamp-2 leading-5 text-foreground/90">{saleCharacteristics(r)}</div>
+                <tr
+                  onClick={() => navigate(`/sales/${r.id}`)}
+                  key={r.id}
+                  className="cursor-pointer odd:bg-white/2.5 transition-colors hover:bg-primary/10"
+                >
+                  <td className="px-4 py-4 align-top font-semibold text-foreground">
+                    {r.district}
                   </td>
-                  <td className="px-4 py-4 align-top whitespace-nowrap text-muted-foreground">{r.sale_term ?? "—"}</td>
-                  <td className="px-4 py-4 align-top text-right tabular-nums text-muted-foreground">{fmtMoney(r.initial_price)}</td>
-                  <td className="px-4 py-4 align-top text-right font-semibold tabular-nums text-foreground">{fmtMoney(r.final_price)}</td>
+                  <td className="px-4 py-4 align-top whitespace-nowrap text-muted-foreground">
+                    {r.floor ?? "—"}
+                  </td>
+                  <td className="px-4 py-4 align-top">
+                    <div className="line-clamp-2 leading-5 text-foreground/90">
+                      {saleCharacteristics(r)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 align-top whitespace-nowrap text-muted-foreground">
+                    {r.sale_term ?? "—"}
+                  </td>
+                  <td className="px-4 py-4 align-top text-right tabular-nums text-muted-foreground">
+                    {fmtMoney(r.initial_price)}
+                  </td>
+                  <td className="px-4 py-4 align-top text-right font-semibold tabular-nums text-foreground">
+                    {fmtMoney(r.final_price)}
+                  </td>
                   <td className="px-4 py-4 align-top">
                     <div className="truncate text-muted-foreground">{r.comment ?? "—"}</div>
                   </td>
@@ -136,10 +185,14 @@ export function SalesListPage() {
 
       <div className="space-y-3 md:hidden">
         {isLoading && (
-          <div className="rounded-md border bg-secondary/70 p-6 text-center text-sm text-muted-foreground">Завантаження…</div>
+          <div className="rounded-md border bg-secondary/70 p-6 text-center text-sm text-muted-foreground">
+            Завантаження…
+          </div>
         )}
         {!isLoading && rows.length === 0 && (
-          <div className="rounded-md border bg-secondary/70 p-6 text-center text-sm text-muted-foreground">Немає даних</div>
+          <div className="rounded-md border bg-secondary/70 p-6 text-center text-sm text-muted-foreground">
+            Немає даних
+          </div>
         )}
         {rows.map((r) => (
           <button
@@ -167,6 +220,9 @@ export function SalesListPage() {
 }
 
 function saleCharacteristics(row: any): string {
-  const value = row.characteristics === undefined || row.characteristics === null ? "" : String(row.characteristics).trim();
+  const value =
+    row.characteristics === undefined || row.characteristics === null
+      ? ""
+      : String(row.characteristics).trim();
   return value || "—";
 }

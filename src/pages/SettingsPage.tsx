@@ -15,19 +15,40 @@ export function SettingsPage() {
       <PageHeader title="Налаштування" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
-          <CardHeader><CardTitle className="text-base">Тема</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Тема</CardTitle>
+          </CardHeader>
           <CardContent className="flex gap-2">
-            <Button variant={theme === "light" ? "default" : "outline"} onClick={() => set("light")}><Sun className="h-4 w-4 mr-2" />Світла</Button>
-            <Button variant={theme === "dark" ? "default" : "outline"} onClick={() => set("dark")}><Moon className="h-4 w-4 mr-2" />Темна</Button>
+            <Button
+              variant={theme === "light" ? "default" : "outline"}
+              onClick={() => set("light")}
+            >
+              <Sun className="h-4 w-4 mr-2" />
+              Світла
+            </Button>
+            <Button variant={theme === "dark" ? "default" : "outline"} onClick={() => set("dark")}>
+              <Moon className="h-4 w-4 mr-2" />
+              Темна
+            </Button>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Профіль</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Профіль</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-1 text-sm">
-            <div><span className="text-muted-foreground">Email: </span>{user?.email}</div>
-            <div><span className="text-muted-foreground">Статус: </span>{statusLabel(user?.status ?? "")}</div>
-            <p className="text-xs text-muted-foreground pt-2">Ваше імʼя та email не показуються іншим користувачам платформи.</p>
+            <div>
+              <span className="text-muted-foreground">Email: </span>
+              {user?.email}
+            </div>
+            <div>
+              <span className="text-muted-foreground">Статус: </span>
+              {statusLabel(user?.status ?? "")}
+            </div>
+            <p className="text-xs text-muted-foreground pt-2">
+              Ваше імʼя та email не показуються іншим користувачам платформи.
+            </p>
           </CardContent>
         </Card>
       </div>

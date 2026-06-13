@@ -31,7 +31,10 @@ const DISCOUNT_BUCKETS = [
 export function DashboardPage() {
   const sales = useQuery({
     queryKey: ["approved-sales", {}, "created_at_desc"],
-    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { status: "approved", limit: 1000, sort: "created_at_desc" } }),
+    queryFn: () =>
+      api<{ sales: Sale[] }>("/api/sales", {
+        query: { status: "approved", limit: 1000, sort: "created_at_desc" },
+      }),
   });
 
   const data = useMemo(() => buildDashboardData(sales.data?.sales ?? []), [sales.data]);
@@ -52,7 +55,9 @@ export function DashboardPage() {
     return (
       <PageShell>
         <Card>
-          <CardContent className="p-10 text-center text-muted-foreground">Немає підтверджених продажів для аналізу.</CardContent>
+          <CardContent className="p-10 text-center text-muted-foreground">
+            Немає підтверджених продажів для аналізу.
+          </CardContent>
         </Card>
       </PageShell>
     );
@@ -73,7 +78,9 @@ export function DashboardPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {data.summaryBadges.map((item) => (
-                <Badge key={item} variant="secondary" className="rounded-md">{item}</Badge>
+                <Badge key={item} variant="secondary" className="rounded-md">
+                  {item}
+                </Badge>
               ))}
             </div>
           </div>
@@ -90,7 +97,11 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <ProgressRow label="З ціною продажу" value={data.withFinalPrice} total={data.total} />
-            <ProgressRow label="Зі стартовою ціною" value={data.withInitialPrice} total={data.total} />
+            <ProgressRow
+              label="Зі стартовою ціною"
+              value={data.withInitialPrice}
+              total={data.total}
+            />
             <ProgressRow label="З терміном продажу" value={data.withSaleTerm} total={data.total} />
           </CardContent>
         </Card>
@@ -98,10 +109,26 @@ export function DashboardPage() {
 
       {/* Метрики */}
       <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard icon={<Building2 className="h-5 w-5" />} label="Локацій" value={fmtNumber(data.locationCount)} />
-        <MetricCard icon={<Activity className="h-5 w-5" />} label="З терміном" value={fmtNumber(data.withSaleTerm)} />
-        <MetricCard icon={<MapPin className="h-5 w-5" />} label="З коментарем" value={fmtNumber(data.withComment)} />
-        <MetricCard icon={<PiggyBank className="h-5 w-5" />} label="Середній торг" value={data.avgDiscount == null ? "—" : `${fmtNumber(data.avgDiscount, 1)}%`} />
+        <MetricCard
+          icon={<Building2 className="h-5 w-5" />}
+          label="Локацій"
+          value={fmtNumber(data.locationCount)}
+        />
+        <MetricCard
+          icon={<Activity className="h-5 w-5" />}
+          label="З терміном"
+          value={fmtNumber(data.withSaleTerm)}
+        />
+        <MetricCard
+          icon={<MapPin className="h-5 w-5" />}
+          label="З коментарем"
+          value={fmtNumber(data.withComment)}
+        />
+        <MetricCard
+          icon={<PiggyBank className="h-5 w-5" />}
+          label="Середній торг"
+          value={data.avgDiscount == null ? "—" : `${fmtNumber(data.avgDiscount, 1)}%`}
+        />
       </div>
 
       {/* ═══ НОВІ ГРАФІКИ ═══ */}
@@ -114,8 +141,6 @@ export function DashboardPage() {
         discountBuckets={data.discountBuckets}
         avgDiscount={data.avgDiscount}
       />
-
-
     </PageShell>
   );
 }
@@ -129,17 +154,31 @@ function buildDashboardData(input: Sale[]) {
   const total = rows.length;
   const prices = rows.map((sale) => Number(sale.final_price)).filter(isFiniteNumber);
   const withFinalPrice = prices.length;
-  const withInitialPrice = rows.filter((sale) => isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0).length;
+  const withInitialPrice = rows.filter(
+    (sale) => isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0,
+  ).length;
   const withSaleTerm = rows.filter((sale) => sale.sale_term).length;
   const withComment = rows.filter((sale) => sale.comment).length;
   const discounts = rows
-    .filter((sale) => isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0 && isFiniteNumber(sale.final_price))
-    .map((sale) => ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) * 100);
+    .filter(
+      (sale) =>
+        isFiniteNumber(sale.initial_price) &&
+        Number(sale.initial_price) > 0 &&
+        isFiniteNumber(sale.final_price),
+    )
+    .map(
+      (sale) =>
+        ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) *
+        100,
+    );
 
   // Цінові коридори — кожна угода як точка, БЕЗ сортування
   const pricePoints: PricePoint[] = rows.map((sale, i) => ({
     idx: i + 1,
-    initialPrice: isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0 ? Number(sale.initial_price) : null,
+    initialPrice:
+      isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0
+        ? Number(sale.initial_price)
+        : null,
     finalPrice: isFiniteNumber(sale.final_price) ? Number(sale.final_price) : null,
   }));
 
@@ -152,13 +191,23 @@ function buildDashboardData(input: Sale[]) {
   const districtRows = allDistrictRows.slice(0, 8);
 
   // Поверхи — БЕЗ сортування
-  const floorRows: ChartItem[] = Object.values(groupBy(rows.filter((sale) => sale.floor), (sale) => sale.floor || "Не вказано")).map((items) => ({
+  const floorRows: ChartItem[] = Object.values(
+    groupBy(
+      rows.filter((sale) => sale.floor),
+      (sale) => sale.floor || "Не вказано",
+    ),
+  ).map((items) => ({
     label: items[0].floor || "Не вказано",
     value: items.length,
   }));
 
   // Термін продажу — БЕЗ сортування
-  const termRows: ChartItem[] = Object.values(groupBy(rows.filter((sale) => sale.sale_term), (sale) => sale.sale_term || "Не вказано")).map((items) => ({
+  const termRows: ChartItem[] = Object.values(
+    groupBy(
+      rows.filter((sale) => sale.sale_term),
+      (sale) => sale.sale_term || "Не вказано",
+    ),
+  ).map((items) => ({
     label: items[0].sale_term || "Не вказано",
     value: items.length,
   }));
@@ -166,8 +215,15 @@ function buildDashboardData(input: Sale[]) {
   // Торг — бакети
   const discountBuckets: ChartItem[] = DISCOUNT_BUCKETS.map((bucket) => {
     const cnt = rows.filter((sale) => {
-      if (!isFiniteNumber(sale.initial_price) || Number(sale.initial_price) <= 0 || !isFiniteNumber(sale.final_price)) return bucket.label === "без торгу";
-      const d = ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) * 100;
+      if (
+        !isFiniteNumber(sale.initial_price) ||
+        Number(sale.initial_price) <= 0 ||
+        !isFiniteNumber(sale.final_price)
+      )
+        return bucket.label === "без торгу";
+      const d =
+        ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) *
+        100;
       return d >= bucket.min && d < bucket.max;
     }).length;
     return { label: bucket.label, value: cnt };
@@ -296,7 +352,15 @@ function ProgressRow({
   );
 }
 
-function Leaderboard({ title, rows, empty }: { title: string; rows: { label: string; value: number }[]; empty: string }) {
+function Leaderboard({
+  title,
+  rows,
+  empty,
+}: {
+  title: string;
+  rows: { label: string; value: number }[];
+  empty: string;
+}) {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
     <Card className="surface">
@@ -312,7 +376,10 @@ function Leaderboard({ title, rows, empty }: { title: string; rows: { label: str
               <span className="tabular-nums text-muted-foreground">{fmtNumber(row.value)}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-primary/80" style={{ width: `${Math.max(8, (row.value / max) * 100)}%` }} />
+              <div
+                className="h-full rounded-full bg-primary/80"
+                style={{ width: `${Math.max(8, (row.value / max) * 100)}%` }}
+              />
             </div>
           </div>
         ))}
@@ -339,7 +406,10 @@ function average(values: Array<number | null | undefined>): number | null {
 }
 
 function median(values: Array<number | null | undefined>): number | null {
-  const nums = values.map(Number).filter(isFiniteNumber).sort((a, b) => a - b);
+  const nums = values
+    .map(Number)
+    .filter(isFiniteNumber)
+    .sort((a, b) => a - b);
   if (!nums.length) return null;
   const mid = Math.floor(nums.length / 2);
   return nums.length % 2 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;

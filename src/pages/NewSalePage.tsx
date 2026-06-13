@@ -19,11 +19,12 @@ export function NewSalePage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    const payload: any = { ...f };
+    ["initial_price", "final_price"].forEach((k) => {
+      if (payload[k] === "" || payload[k] == null) delete payload[k];
+      else payload[k] = Number(payload[k]);
+    });
     try {
-      const payload: any = { ...f };
-      ["initial_price", "final_price"].forEach((k) => {
-        if (payload[k] === "" || payload[k] == null) delete payload[k]; else payload[k] = Number(payload[k]);
-      });
       await api("/api/sales", { method: "POST", body: payload });
       toast.success("Дані відправлено на перевірку");
       navigate("/sales");
@@ -32,7 +33,13 @@ export function NewSalePage() {
         const userId = getCurrentUserId();
         if (userId) {
           try {
-            await enqueueOfflineRequest({ userId, path: "/api/sales", method: "POST", body: payload, label: "Новий продаж" });
+            await enqueueOfflineRequest({
+              userId,
+              path: "/api/sales",
+              method: "POST",
+              body: payload,
+              label: "Новий продаж",
+            });
             toast.success("Збережено в офлайн-чергу");
             navigate("/sales");
           } catch {
@@ -44,7 +51,9 @@ export function NewSalePage() {
       } else {
         toast.error(e.message);
       }
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -52,34 +61,99 @@ export function NewSalePage() {
       <PageHeader title="Додати продаж" />
       <form onSubmit={submit} className="space-y-4">
         <Card>
-          <CardHeader><CardTitle className="text-base">Поля продажу</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Поля продажу</CardTitle>
+          </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="Район/ЖК *"><Input required value={f.district ?? ""} onChange={(e) => u("district", e.target.value)} /></Field>
-            <Field label="Поверх"><Input value={f.floor ?? ""} onChange={(e) => u("floor", e.target.value)} /></Field>
-            <Field label="Термін продажу"><Input value={f.sale_term ?? ""} onChange={(e) => u("sale_term", e.target.value)} /></Field>
-            <FieldNum label="Початкова ціна" value={f.initial_price} onChange={(v) => u("initial_price", v)} />
-            <FieldNum label="Продаж ціна" value={f.final_price} onChange={(v) => u("final_price", v)} />
+            <Field label="Район/ЖК *">
+              <Input
+                required
+                value={f.district ?? ""}
+                onChange={(e) => u("district", e.target.value)}
+              />
+            </Field>
+            <Field label="Поверх">
+              <Input value={f.floor ?? ""} onChange={(e) => u("floor", e.target.value)} />
+            </Field>
+            <Field label="Термін продажу">
+              <Input value={f.sale_term ?? ""} onChange={(e) => u("sale_term", e.target.value)} />
+            </Field>
+            <FieldNum
+              label="Початкова ціна"
+              value={f.initial_price}
+              onChange={(v) => u("initial_price", v)}
+            />
+            <FieldNum
+              label="Продаж ціна"
+              value={f.final_price}
+              onChange={(v) => u("final_price", v)}
+            />
             <Field label="Характеристика" className="md:col-span-3">
-              <Textarea value={f.characteristics ?? ""} onChange={(e) => u("characteristics", e.target.value)} rows={3} />
+              <Textarea
+                value={f.characteristics ?? ""}
+                onChange={(e) => u("characteristics", e.target.value)}
+                rows={3}
+              />
             </Field>
             <Field label="Коментар" className="md:col-span-3">
-              <Textarea value={f.comment ?? ""} onChange={(e) => u("comment", e.target.value)} rows={3} />
+              <Textarea
+                value={f.comment ?? ""}
+                onChange={(e) => u("comment", e.target.value)}
+                rows={3}
+              />
             </Field>
           </CardContent>
         </Card>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => navigate("/sales")}>Скасувати</Button>
-          <Button type="submit" disabled={busy}>{busy ? "..." : "Відправити на перевірку"}</Button>
+          <Button type="button" variant="outline" onClick={() => navigate("/sales")}>
+            Скасувати
+          </Button>
+          <Button type="submit" disabled={busy}>
+            {busy ? "..." : "Відправити на перевірку"}
+          </Button>
         </div>
       </form>
     </PageShell>
   );
 }
 
-function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
-  return <div className={`space-y-1.5 ${className ?? ""}`}><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`space-y-1.5 ${className ?? ""}`}>
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
 }
-function FieldNum({ label, value, onChange, required }: { label: string; value: any; onChange: (v: string) => void; required?: boolean }) {
-  return <Field label={label}><Input type="number" step="any" required={required} value={value ?? ""} onChange={(e) => onChange(e.target.value)} /></Field>;
+function FieldNum({
+  label,
+  value,
+  onChange,
+  required,
+}: {
+  label: string;
+  value: any;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <Field label={label}>
+      <Input
+        type="number"
+        step="any"
+        required={required}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </Field>
+  );
 }

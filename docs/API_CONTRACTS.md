@@ -33,7 +33,14 @@ Rules:
 Response `201`:
 
 ```json
-{ "id": "id", "email": "user@example.com", "role": "user", "status": "pending", "name": "Name", "message": "..." }
+{
+  "id": "id",
+  "email": "user@example.com",
+  "role": "user",
+  "status": "pending",
+  "name": "Name",
+  "message": "..."
+}
 ```
 
 ### `POST /api/auth/login`
@@ -47,7 +54,17 @@ Body:
 Response:
 
 ```json
-{ "access": "jwt", "refresh": "jwt", "user": { "id": "id", "email": "user@example.com", "name": null, "role": "user", "status": "approved" } }
+{
+  "access": "jwt",
+  "refresh": "jwt",
+  "user": {
+    "id": "id",
+    "email": "user@example.com",
+    "name": null,
+    "role": "user",
+    "status": "approved"
+  }
+}
 ```
 
 ### `POST /api/auth/refresh`
@@ -87,7 +104,15 @@ Auth: Bearer access token.
 Response:
 
 ```json
-{ "user": { "id": "id", "email": "user@example.com", "name": null, "role": "user", "status": "approved" } }
+{
+  "user": {
+    "id": "id",
+    "email": "user@example.com",
+    "name": null,
+    "role": "user",
+    "status": "approved"
+  }
+}
 ```
 
 ## Users
@@ -98,6 +123,7 @@ Auth: `admin`, або `superuser`.
 - `PATCH /api/users/:id/approve` returns `{ "ok": true }`.
 - `PATCH /api/users/:id/role` body `{ "role": "admin" }`, returns `{ "ok": true }`.
 - `PATCH /api/users/:id/block` body `{ "unblock": true }`, returns `{ "ok": true, "status": "approved" }`.
+- Missing user id returns `404`.
 
 Non-superuser не може змінювати або блокувати `superuser`.
 
@@ -128,6 +154,9 @@ Query filters:
 - `sale_term`
 - `sort`
 - `limit`
+
+Invalid numeric filters (`price_min`, `price_max`) або invalid `limit` return `400`.
+`limit` is clamped to `1..1000`.
 
 Sort values:
 
@@ -171,10 +200,12 @@ Auth: `admin`, `moderator`, або `superuser`.
 - `PATCH /api/sales/:id/approve` sets `status = approved`.
 - `PATCH /api/sales/:id/reject` sets `status = rejected`.
 - `PATCH /api/sales/:id/duplicate` sets `status = duplicate`.
+- Missing sale id returns `404`.
 
 Delete:
 
 - `DELETE /api/sales/:id` requires `admin` або `superuser`.
+- Missing sale id returns `404`.
 
 ## Analytics
 
@@ -192,6 +223,7 @@ Endpoints:
 - `GET /api/analytics/distribution`
 
 Підтримують ті самі filters, що й `GET /api/sales`, через shared `parseFilters`.
+Invalid numeric filters return `400`.
 
 ## Imports
 
@@ -236,4 +268,5 @@ Returns latest 100 import records.
 - `403`: blocked, pending, or insufficient role.
 - `404`: route/entity not found.
 - `409`: duplicate email on register.
+- `429`: auth rate limit exceeded.
 - `500`: unhandled Worker error.

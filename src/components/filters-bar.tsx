@@ -30,7 +30,8 @@ export function FiltersBar({
   frameless?: boolean;
 }) {
   const [local, setLocal] = useState<SalesFilters>(value);
-  const upd = (k: Exclude<keyof SalesFilters, "districts">, v: string) => setLocal((p) => ({ ...p, [k]: v || undefined }));
+  const upd = (k: Exclude<keyof SalesFilters, "districts">, v: string) =>
+    setLocal((p) => ({ ...p, [k]: v || undefined }));
   const selectedDistricts = local.districts ?? [];
   const toggleDistrict = (district: string, checked: boolean) => {
     setLocal((p) => {
@@ -40,18 +41,29 @@ export function FiltersBar({
     });
   };
   const apply = () => onChange(local);
-  const reset = () => { setLocal({}); onChange({}); };
+  const reset = () => {
+    setLocal({});
+    onChange({});
+  };
 
   const body = (
     <>
-      <div className={`grid gap-3 ${compact ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-4" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"}`}>
+      <div
+        className={`grid gap-3 ${compact ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-4" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"}`}
+      >
         <Field label="Район/ЖК">
           {districtOptions.length ? (
             <Popover>
               <PopoverTrigger asChild>
-                <Button type="button" variant="outline" className="w-full justify-between overflow-hidden font-normal">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-between overflow-hidden font-normal"
+                >
                   <span className="truncate">
-                    {selectedDistricts.length ? `${selectedDistricts.length} обрано` : "Оберіть райони"}
+                    {selectedDistricts.length
+                      ? `${selectedDistricts.length} обрано`
+                      : "Оберіть райони"}
                   </span>
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
@@ -59,7 +71,10 @@ export function FiltersBar({
               <PopoverContent align="start" className="max-h-72 w-72 overflow-y-auto p-2">
                 <div className="space-y-1">
                   {districtOptions.map((district) => (
-                    <label key={district} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent">
+                    <label
+                      key={district}
+                      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                    >
                       <Checkbox
                         checked={selectedDistricts.includes(district)}
                         onCheckedChange={(checked) => toggleDistrict(district, checked === true)}
@@ -74,14 +89,35 @@ export function FiltersBar({
             <Input value={local.district ?? ""} onChange={(e) => upd("district", e.target.value)} />
           )}
         </Field>
-        <Field label="Ціна від"><Input type="number" value={local.price_min ?? ""} onChange={(e) => upd("price_min", e.target.value)} /></Field>
-        <Field label="Ціна до"><Input type="number" value={local.price_max ?? ""} onChange={(e) => upd("price_max", e.target.value)} /></Field>
-        <Field label="Поверх"><Input value={local.floor ?? ""} onChange={(e) => upd("floor", e.target.value)} /></Field>
-        <Field label="Термін"><Input value={local.sale_term ?? ""} onChange={(e) => upd("sale_term", e.target.value)} /></Field>
+        <Field label="Ціна від">
+          <Input
+            type="number"
+            value={local.price_min ?? ""}
+            onChange={(e) => upd("price_min", e.target.value)}
+          />
+        </Field>
+        <Field label="Ціна до">
+          <Input
+            type="number"
+            value={local.price_max ?? ""}
+            onChange={(e) => upd("price_max", e.target.value)}
+          />
+        </Field>
+        <Field label="Поверх">
+          <Input value={local.floor ?? ""} onChange={(e) => upd("floor", e.target.value)} />
+        </Field>
+        <Field label="Термін">
+          <Input value={local.sale_term ?? ""} onChange={(e) => upd("sale_term", e.target.value)} />
+        </Field>
       </div>
       <div className="flex gap-2 mt-4">
-        <Button onClick={apply} size="sm">Застосувати</Button>
-        <Button onClick={reset} size="sm" variant="ghost"><X className="h-4 w-4 mr-1" />Скинути</Button>
+        <Button onClick={apply} size="sm">
+          Застосувати
+        </Button>
+        <Button onClick={reset} size="sm" variant="ghost">
+          <X className="h-4 w-4 mr-1" />
+          Скинути
+        </Button>
       </div>
     </>
   );
@@ -90,9 +126,7 @@ export function FiltersBar({
 
   return (
     <Card>
-      <CardContent className="p-4">
-        {body}
-      </CardContent>
+      <CardContent className="p-4">{body}</CardContent>
     </Card>
   );
 }

@@ -18,7 +18,12 @@ import { getOfflineQueue, subscribeOfflineQueue } from "@/lib/offline-store";
 import { syncOfflineQueue } from "@/lib/api";
 import { toast } from "sonner";
 
-interface NavItem { to: string; label: string; icon: string; roles?: string[]; }
+interface NavItem {
+  to: string;
+  label: string;
+  icon: string;
+  roles?: string[];
+}
 
 const STAFF_ROLES = ["superuser", "admin", "moderator"];
 
@@ -40,7 +45,9 @@ export function AuthenticatedLayout() {
   const { theme, toggle } = useTheme();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
+  const [online, setOnline] = useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine,
+  );
   const [queueCount, setQueueCount] = useState(0);
   const [syncing, setSyncing] = useState(false);
   const syncAttemptRef = useRef("");
@@ -51,7 +58,9 @@ export function AuthenticatedLayout() {
     else if (user.status !== "approved") navigate("/pending", { replace: true });
   }, [user, loading, navigate]);
 
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const update = () => {
@@ -67,7 +76,10 @@ export function AuthenticatedLayout() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setQueueCount(0); return; }
+    if (!user) {
+      setQueueCount(0);
+      return;
+    }
     const update = () => getOfflineQueue(user.id).then((rows) => setQueueCount(rows.length));
     update();
     return subscribeOfflineQueue(update);
@@ -98,10 +110,16 @@ export function AuthenticatedLayout() {
   }, [user, online, queueCount, syncing, queryClient]);
 
   if (loading || !user || user.status !== "approved") {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Завантаження…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Завантаження…
+      </div>
+    );
   }
 
-  const visibleNav = NAV.filter((n) => !n.roles || user.role === "superuser" || n.roles.includes(user.role));
+  const visibleNav = NAV.filter(
+    (n) => !n.roles || user.role === "superuser" || n.roles.includes(user.role),
+  );
 
   return (
     <div className="min-h-[100dvh] w-full">
@@ -138,11 +156,19 @@ export function AuthenticatedLayout() {
       </div>
       {(!online || apiUnreachable || queueCount > 0 || syncing) && (
         <div className="fixed right-3 top-3 z-30 rounded-md border border-white/10 bg-black/70 px-3 py-2 text-xs text-foreground shadow-lg backdrop-blur-md">
-          {syncing ? "Синхронізація…" : !online || apiUnreachable ? "Офлайн-режим" : "Очікує синхронізації"}
+          {syncing
+            ? "Синхронізація…"
+            : !online || apiUnreachable
+              ? "Офлайн-режим"
+              : "Очікує синхронізації"}
           {queueCount > 0 && <span className="ml-2 text-muted-foreground">{queueCount}</span>}
         </div>
       )}
-      <MobileBottomBar nav={visibleNav} pathname={pathname} onOpenSidebar={() => setMobileOpen(true)} />
+      <MobileBottomBar
+        nav={visibleNav}
+        pathname={pathname}
+        onOpenSidebar={() => setMobileOpen(true)}
+      />
     </div>
   );
 }

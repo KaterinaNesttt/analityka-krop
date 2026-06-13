@@ -39,7 +39,13 @@ interface LocalFilters {
   sale_term: string;
 }
 
-const EMPTY_FILTERS: LocalFilters = { district: "", price_min: "", price_max: "", floor: "", sale_term: "" };
+const EMPTY_FILTERS: LocalFilters = {
+  district: "",
+  price_min: "",
+  price_max: "",
+  floor: "",
+  sale_term: "",
+};
 
 export function PriceDetailPage() {
   const navigate = useNavigate();
@@ -49,16 +55,26 @@ export function PriceDetailPage() {
   const sales = useQuery({
     queryKey: ["approved-sales", {}, "created_at_desc"],
     queryFn: () =>
-      api<{ sales: Sale[] }>("/api/sales", { query: { status: "approved", limit: 1000, sort: "created_at_desc" } }),
+      api<{ sales: Sale[] }>("/api/sales", {
+        query: { status: "approved", limit: 1000, sort: "created_at_desc" },
+      }),
   });
 
   const data = useMemo(() => {
     const rows = (sales.data?.sales ?? []).filter((s) => {
-      if (applied.district && !s.district.toLowerCase().includes(applied.district.toLowerCase())) return false;
-      if (applied.floor && !(s.floor ?? "").toLowerCase().includes(applied.floor.toLowerCase())) return false;
-      if (applied.sale_term && !(s.sale_term ?? "").toLowerCase().includes(applied.sale_term.toLowerCase())) return false;
-      if (applied.price_min && isNum(s.final_price) && s.final_price < Number(applied.price_min)) return false;
-      if (applied.price_max && isNum(s.final_price) && s.final_price > Number(applied.price_max)) return false;
+      if (applied.district && !s.district.toLowerCase().includes(applied.district.toLowerCase()))
+        return false;
+      if (applied.floor && !(s.floor ?? "").toLowerCase().includes(applied.floor.toLowerCase()))
+        return false;
+      if (
+        applied.sale_term &&
+        !(s.sale_term ?? "").toLowerCase().includes(applied.sale_term.toLowerCase())
+      )
+        return false;
+      if (applied.price_min && isNum(s.final_price) && s.final_price < Number(applied.price_min))
+        return false;
+      if (applied.price_max && isNum(s.final_price) && s.final_price > Number(applied.price_max))
+        return false;
       return true;
     });
 
@@ -85,7 +101,12 @@ export function PriceDetailPage() {
   return (
     <PageShell>
       <PageHeader title="Цінові коридори — деталі">
-        <Button variant="outline" size="sm" className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 gap-1" onClick={() => navigate("/analytics")}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 gap-1"
+          onClick={() => navigate("/analytics")}
+        >
           <ArrowLeft className="h-4 w-4" /> Аналітика
         </Button>
       </PageHeader>
@@ -104,10 +125,18 @@ export function PriceDetailPage() {
               <Input value={filters.sale_term} onChange={(e) => upd("sale_term", e.target.value)} />
             </Field>
             <Field label="Ціна від">
-              <Input type="number" value={filters.price_min} onChange={(e) => upd("price_min", e.target.value)} />
+              <Input
+                type="number"
+                value={filters.price_min}
+                onChange={(e) => upd("price_min", e.target.value)}
+              />
             </Field>
             <Field label="Ціна до">
-              <Input type="number" value={filters.price_max} onChange={(e) => upd("price_max", e.target.value)} />
+              <Input
+                type="number"
+                value={filters.price_max}
+                onChange={(e) => upd("price_max", e.target.value)}
+              />
             </Field>
             <div className="flex items-end gap-2">
               <Button size="sm" onClick={() => setApplied(filters)}>
@@ -134,7 +163,14 @@ export function PriceDetailPage() {
         <Stat label="Угод" value={fmtNumber(data.total)} />
         <Stat label="Середня ціна" value={fmtMoney(data.avgPrice)} />
         <Stat label="Медіана" value={fmtMoney(data.medianPrice)} />
-        <Stat label="Діапазон" value={data.minPrice != null && data.maxPrice != null ? `${fmtMoney(data.minPrice)} – ${fmtMoney(data.maxPrice)}` : "—"} />
+        <Stat
+          label="Діапазон"
+          value={
+            data.minPrice != null && data.maxPrice != null
+              ? `${fmtMoney(data.minPrice)} – ${fmtMoney(data.maxPrice)}`
+              : "—"
+          }
+        />
       </div>
 
       {/* Графік */}
@@ -142,7 +178,9 @@ export function PriceDetailPage() {
         <div className="h-96 rounded-2xl animate-pulse bg-card/60" />
       ) : !data.points.length ? (
         <Card className="rounded-2xl border-white/5">
-          <CardContent className="p-10 text-center text-muted-foreground">Немає даних за цими фільтрами.</CardContent>
+          <CardContent className="p-10 text-center text-muted-foreground">
+            Немає даних за цими фільтрами.
+          </CardContent>
         </Card>
       ) : (
         <Card className="rounded-2xl border-white/5">
@@ -156,9 +194,25 @@ export function PriceDetailPage() {
                       <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.01} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(255,255,255,0.06)" />
-                  <XAxis dataKey="idx" stroke="var(--color-muted-foreground)" fontSize={11} axisLine={false} tickLine={false} />
-                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} axisLine={false} tickLine={false} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
+                  <CartesianGrid
+                    strokeDasharray="3 6"
+                    vertical={false}
+                    stroke="rgba(255,255,255,0.06)"
+                  />
+                  <XAxis
+                    dataKey="idx"
+                    stroke="var(--color-muted-foreground)"
+                    fontSize={11}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    stroke="var(--color-muted-foreground)"
+                    fontSize={11}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
+                  />
                   <Tooltip content={<DetailTooltip />} />
                   <Area
                     type="monotone"
@@ -214,7 +268,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function DetailTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name?: string; value?: number; stroke?: string; color?: string }> }) {
+function DetailTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ name?: string; value?: number; stroke?: string; color?: string }>;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-xl bg-popover/95 px-3 py-2 text-sm border border-white/10 shadow-lg">
@@ -223,7 +283,10 @@ function DetailTooltip({ active, payload }: { active?: boolean; payload?: Array<
           entry.value != null && (
             <div key={i} className="flex items-center justify-between gap-4 min-w-40">
               <span className="flex items-center gap-2 text-muted-foreground">
-                <span className="h-2 w-2 rounded-full" style={{ background: entry.stroke || entry.color }} />
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: entry.stroke || entry.color }}
+                />
                 {entry.name}
               </span>
               <span className="font-medium tabular-nums">{fmtMoney(entry.value)}</span>

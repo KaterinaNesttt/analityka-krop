@@ -59,4 +59,4 @@ npx wrangler dev
 - `src/imports.ts` — парсинг Telegram-тексту + CSV-імпорт
 - `src/users.ts` — керування користувачами (admin)
 - `migrations/0001_init.sql` — схема D1
-- `seed.sql` — демо-дані (is_demo=1, чистяться через `DELETE /api/sales/demo`)
+- `seed.sql` — демо-дані у поточній `sales`-схемі

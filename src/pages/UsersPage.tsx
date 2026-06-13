@@ -4,7 +4,13 @@ import { PageHeader, PageShell } from "@/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { fmtDate, roleLabel, statusLabel } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
@@ -14,9 +20,53 @@ export function UsersPage() {
   const queryClient = useQueryClient();
   const q = useQuery({ queryKey: ["users"], queryFn: () => api<{ users: any[] }>("/api/users") });
 
-  const approve = async (id: string) => { try { await api(`/api/users/${id}/approve`, { method: "PATCH" }); toast.success("Підтверджено"); queryClient.setQueryData<{ users: any[] }>(["users"], (current) => current ? { ...current, users: current.users.map((u) => u.id === id ? { ...u, status: "approved" } : u) } : current); } catch (e: any) { toast.error(isNetworkError(e) ? "Керування користувачами доступне лише онлайн" : e.message); } };
-  const block = async (id: string, unblock = false) => { try { await api(`/api/users/${id}/block`, { method: "PATCH", body: { unblock } }); toast.success("Готово"); queryClient.setQueryData<{ users: any[] }>(["users"], (current) => current ? { ...current, users: current.users.map((u) => u.id === id ? { ...u, status: unblock ? "approved" : "blocked" } : u) } : current); } catch (e: any) { toast.error(isNetworkError(e) ? "Керування користувачами доступне лише онлайн" : e.message); } };
-  const setRole = async (id: string, role: string) => { try { await api(`/api/users/${id}/role`, { method: "PATCH", body: { role } }); toast.success("Роль оновлено"); queryClient.setQueryData<{ users: any[] }>(["users"], (current) => current ? { ...current, users: current.users.map((u) => u.id === id ? { ...u, role } : u) } : current); } catch (e: any) { toast.error(isNetworkError(e) ? "Керування користувачами доступне лише онлайн" : e.message); } };
+  const approve = async (id: string) => {
+    try {
+      await api(`/api/users/${id}/approve`, { method: "PATCH" });
+      toast.success("Підтверджено");
+      queryClient.setQueryData<{ users: any[] }>(["users"], (current) =>
+        current
+          ? {
+              ...current,
+              users: current.users.map((u) => (u.id === id ? { ...u, status: "approved" } : u)),
+            }
+          : current,
+      );
+    } catch (e: any) {
+      toast.error(isNetworkError(e) ? "Керування користувачами доступне лише онлайн" : e.message);
+    }
+  };
+  const block = async (id: string, unblock = false) => {
+    try {
+      await api(`/api/users/${id}/block`, { method: "PATCH", body: { unblock } });
+      toast.success("Готово");
+      queryClient.setQueryData<{ users: any[] }>(["users"], (current) =>
+        current
+          ? {
+              ...current,
+              users: current.users.map((u) =>
+                u.id === id ? { ...u, status: unblock ? "approved" : "blocked" } : u,
+              ),
+            }
+          : current,
+      );
+    } catch (e: any) {
+      toast.error(isNetworkError(e) ? "Керування користувачами доступне лише онлайн" : e.message);
+    }
+  };
+  const setRole = async (id: string, role: string) => {
+    try {
+      await api(`/api/users/${id}/role`, { method: "PATCH", body: { role } });
+      toast.success("Роль оновлено");
+      queryClient.setQueryData<{ users: any[] }>(["users"], (current) =>
+        current
+          ? { ...current, users: current.users.map((u) => (u.id === id ? { ...u, role } : u)) }
+          : current,
+      );
+    } catch (e: any) {
+      toast.error(isNetworkError(e) ? "Керування користувачами доступне лише онлайн" : e.message);
+    }
+  };
 
   return (
     <PageShell>
@@ -42,30 +92,58 @@ export function UsersPage() {
                   <td className="p-3 text-muted-foreground">{u.name ?? "—"}</td>
                   <td className="p-3">
                     <Select value={u.role} onValueChange={(v) => setRole(u.id, v)}>
-                      <SelectTrigger className="w-40 h-8"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-40 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="user">{roleLabel("user")}</SelectItem>
                         <SelectItem value="moderator">{roleLabel("moderator")}</SelectItem>
                         <SelectItem value="admin">{roleLabel("admin")}</SelectItem>
-                        <SelectItem value="superuser" disabled={user?.role !== "superuser"}>{roleLabel("superuser")}</SelectItem>
+                        <SelectItem value="superuser" disabled={user?.role !== "superuser"}>
+                          {roleLabel("superuser")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </td>
-                  <td className="p-3"><Badge variant={u.status === "approved" ? "default" : u.status === "blocked" ? "destructive" : "secondary"}>{statusLabel(u.status)}</Badge></td>
+                  <td className="p-3">
+                    <Badge
+                      variant={
+                        u.status === "approved"
+                          ? "default"
+                          : u.status === "blocked"
+                            ? "destructive"
+                            : "secondary"
+                      }
+                    >
+                      {statusLabel(u.status)}
+                    </Badge>
+                  </td>
                   <td className="p-3 text-muted-foreground text-xs">{fmtDate(u.created_at)}</td>
                   <td className="p-3 text-muted-foreground text-xs">{fmtDate(u.last_login_at)}</td>
                   <td className="p-3 text-right space-x-2 whitespace-nowrap">
-                    {u.status === "pending" && <Button size="sm" onClick={() => approve(u.id)}>Підтвердити</Button>}
+                    {u.status === "pending" && (
+                      <Button size="sm" onClick={() => approve(u.id)}>
+                        Підтвердити
+                      </Button>
+                    )}
                     {u.status !== "blocked" ? (
-                      <Button size="sm" variant="outline" onClick={() => block(u.id)}>Блокувати</Button>
+                      <Button size="sm" variant="outline" onClick={() => block(u.id)}>
+                        Блокувати
+                      </Button>
                     ) : (
-                      <Button size="sm" variant="outline" onClick={() => block(u.id, true)}>Розблокувати</Button>
+                      <Button size="sm" variant="outline" onClick={() => block(u.id, true)}>
+                        Розблокувати
+                      </Button>
                     )}
                   </td>
                 </tr>
               ))}
               {!q.isLoading && (q.data?.users.length ?? 0) === 0 && (
-                <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Немає користувачів</td></tr>
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    Немає користувачів
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

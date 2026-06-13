@@ -14,15 +14,26 @@ export function SaleDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
+  const isStaff =
+    user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const { data, isLoading } = useQuery({
     queryKey: ["sale", id],
     queryFn: () => api<{ sale: any }>(`/api/sales/${id}`),
     enabled: !!id,
   });
 
-  if (isLoading) return <PageShell><div className="text-muted-foreground">Завантаження…</div></PageShell>;
-  if (!data?.sale) return <PageShell><div className="text-muted-foreground">Запис не знайдено</div></PageShell>;
+  if (isLoading)
+    return (
+      <PageShell>
+        <div className="text-muted-foreground">Завантаження…</div>
+      </PageShell>
+    );
+  if (!data?.sale)
+    return (
+      <PageShell>
+        <div className="text-muted-foreground">Запис не знайдено</div>
+      </PageShell>
+    );
 
   const s = data.sale;
 
@@ -31,24 +42,33 @@ export function SaleDetailPage() {
       await api(`/api/sales/${id}/${action}`, { method: "PATCH" });
       toast.success("Статус оновлено");
       const status = action === "approve" ? "approved" : action;
-      queryClient.setQueryData<{ sale: any }>(["sale", id], (current) => current ? { ...current, sale: { ...current.sale, status } } : current);
+      queryClient.setQueryData<{ sale: any }>(["sale", id], (current) =>
+        current ? { ...current, sale: { ...current.sale, status } } : current,
+      );
       queryClient.invalidateQueries({ queryKey: ["sales"], refetchType: "none" });
       queryClient.invalidateQueries({ queryKey: ["approved-sales"], refetchType: "none" });
       queryClient.invalidateQueries({ queryKey: ["mod-list"], refetchType: "none" });
-    } catch (e: any) { toast.error(isNetworkError(e) ? "Модерація доступна лише онлайн" : e.message); }
+    } catch (e: any) {
+      toast.error(isNetworkError(e) ? "Модерація доступна лише онлайн" : e.message);
+    }
   };
   const del = async () => {
     if (!confirm("Видалити запис?")) return;
     try {
       await api(`/api/sales/${id}`, { method: "DELETE" });
-      toast.success("Видалено"); navigate("/sales");
-    } catch (e: any) { toast.error(isNetworkError(e) ? "Видалення доступне лише онлайн" : e.message); }
+      toast.success("Видалено");
+      navigate("/sales");
+    } catch (e: any) {
+      toast.error(isNetworkError(e) ? "Видалення доступне лише онлайн" : e.message);
+    }
   };
 
   return (
     <PageShell>
       <PageHeader title={s.district}>
-        <Badge variant={s.status === "approved" ? "default" : "secondary"}>{statusLabel(s.status)}</Badge>
+        <Badge variant={s.status === "approved" ? "default" : "secondary"}>
+          {statusLabel(s.status)}
+        </Badge>
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -60,28 +80,55 @@ export function SaleDetailPage() {
 
       <div className="grid grid-cols-1 gap-4">
         <Card>
-          <CardHeader><CardTitle className="text-base">Деталі продажу</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Деталі продажу</CardTitle>
+          </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-2 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">Район/ЖК</dt><dd>{s.district}</dd>
-              <dt className="text-muted-foreground">Поверх</dt><dd>{s.floor ?? "—"}</dd>
-              <dt className="text-muted-foreground">Термін</dt><dd>{s.sale_term ?? "—"}</dd>
-              <dt className="text-muted-foreground">Початкова ціна</dt><dd>{fmtMoney(s.initial_price)}</dd>
-              <dt className="text-muted-foreground">Продаж ціна</dt><dd>{fmtMoney(s.final_price)}</dd>
+              <dt className="text-muted-foreground">Район/ЖК</dt>
+              <dd>{s.district}</dd>
+              <dt className="text-muted-foreground">Поверх</dt>
+              <dd>{s.floor ?? "—"}</dd>
+              <dt className="text-muted-foreground">Термін</dt>
+              <dd>{s.sale_term ?? "—"}</dd>
+              <dt className="text-muted-foreground">Початкова ціна</dt>
+              <dd>{fmtMoney(s.initial_price)}</dd>
+              <dt className="text-muted-foreground">Продаж ціна</dt>
+              <dd>{fmtMoney(s.final_price)}</dd>
             </dl>
-            {s.characteristics && (<><div className="mt-4 text-xs text-muted-foreground">Характеристика</div><div className="text-sm mt-1 whitespace-pre-wrap">{s.characteristics}</div></>)}
-            {s.comment && (<><div className="mt-4 text-xs text-muted-foreground">Коментар</div><div className="text-sm mt-1">{s.comment}</div></>)}
+            {s.characteristics && (
+              <>
+                <div className="mt-4 text-xs text-muted-foreground">Характеристика</div>
+                <div className="text-sm mt-1 whitespace-pre-wrap">{s.characteristics}</div>
+              </>
+            )}
+            {s.comment && (
+              <>
+                <div className="mt-4 text-xs text-muted-foreground">Коментар</div>
+                <div className="text-sm mt-1">{s.comment}</div>
+              </>
+            )}
           </CardContent>
         </Card>
 
         {isStaff && (
           <Card>
-            <CardHeader><CardTitle className="text-base">Модерація</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base">Модерація</CardTitle>
+            </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               <Button onClick={() => moderate("approve")}>Підтвердити</Button>
-              <Button variant="outline" onClick={() => moderate("reject")}>Відхилити</Button>
-              <Button variant="outline" onClick={() => moderate("duplicate")}>Дублікат</Button>
-              {(user?.role === "superuser" || user?.role === "admin") && <Button variant="destructive" onClick={del}>Видалити</Button>}
+              <Button variant="outline" onClick={() => moderate("reject")}>
+                Відхилити
+              </Button>
+              <Button variant="outline" onClick={() => moderate("duplicate")}>
+                Дублікат
+              </Button>
+              {(user?.role === "superuser" || user?.role === "admin") && (
+                <Button variant="destructive" onClick={del}>
+                  Видалити
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

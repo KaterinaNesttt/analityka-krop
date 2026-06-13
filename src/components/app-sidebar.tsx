@@ -85,10 +85,10 @@ export const AppSidebar = React.memo(function AppSidebar({
 
   return (
     <aside
-  className={cn(
-    "asset-sidebar flex max-h-190 max-w-46 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground",
-    className,
-  )}
+      className={cn(
+        "asset-sidebar flex max-h-190 max-w-46 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground",
+        className,
+      )}
     >
       <div className="flex h-16 shrink-0 items-center gap-3 px-3">
         <div className="min-w-0">
@@ -103,16 +103,17 @@ export const AppSidebar = React.memo(function AppSidebar({
 
       <nav className="flex min-h-0  flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-0.5 py-0.5">
         {visibleNav.map((item) => {
-          const active = pathname === item.to || (item.to !== "/dashboard" && pathname.startsWith(item.to));
+          const active =
+            pathname === item.to || (item.to !== "/dashboard" && pathname.startsWith(item.to));
 
-          return <SidebarNavItem  key={item.to} item={item} active={active} />;
+          return <SidebarNavItem key={item.to} item={item} active={active} />;
         })}
       </nav>
 
       <div className="shrink-0 space-y-3  p-4">
         <Button className="px-4 py-3 text-sm w-full justify-between text-sidebar-foreground/76">
           <div className="truncate  font-medium text-sidebar-foreground">{userTitle}</div>
-                    <Button
+          <Button
             type="button"
             variant="outline"
             size="sm"
@@ -123,7 +124,7 @@ export const AppSidebar = React.memo(function AppSidebar({
             <LogOut className="h-4 w-4" />
           </Button>
         </Button>
-        
+
         <div className="flex gap-2">
           {/*
           <Button
@@ -137,7 +138,6 @@ export const AppSidebar = React.memo(function AppSidebar({
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
                  */}
-
         </div>
       </div>
     </aside>

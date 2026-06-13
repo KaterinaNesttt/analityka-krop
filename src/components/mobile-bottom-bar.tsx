@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
 
-interface NavItem { to: string; label: string; icon: string; roles?: string[]; }
+interface NavItem {
+  to: string;
+  label: string;
+  icon: string;
+  roles?: string[];
+}
 
 export function MobileBottomBar({
   nav,
@@ -23,7 +28,9 @@ export function MobileBottomBar({
             key={n.to}
             to={n.to}
             className={`flex min-h-14 max-w-16 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] leading-none transition-colors ${
-              active ? "glass-outpress-edge text-sidebar-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              active
+                ? "glass-outpress-edge text-sidebar-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             }`}
           >
             <img src={n.icon} alt="" aria-hidden="true" className="h-7 w-7" />

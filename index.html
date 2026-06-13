@@ -4,17 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Аналітика Кроп — фактичні продажі нерухомості</title>
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-    <meta name="theme-color" content="#000000">
-    <meta name="description" content="Закрита аналітична платформа для агентів нерухомості м. Кропивницький." />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Закрита аналітична платформа для агентів нерухомості м. Кропивницький."
+    />
     <script>
       (() => {
         try {
-          var t = localStorage.getItem('ak.theme');
-          if (!t) t = 'dark';
-          if (t === 'dark') document.documentElement.classList.add('dark');
+          var t = localStorage.getItem("ak.theme");
+          if (!t) t = "dark";
+          if (t === "dark") document.documentElement.classList.add("dark");
         } catch (e) {}
       })();
     </script>
@@ -23,9 +26,9 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js");
         });
       }
     </script>

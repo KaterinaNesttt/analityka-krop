@@ -23,7 +23,15 @@ export function StatCard({ title, value, hint, icon }: Props) {
   );
 }
 
-export function PageHeader({ title, description, children }: { title: string; description?: string; children?: ReactNode }) {
+export function PageHeader({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children?: ReactNode;
+}) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
       <div>

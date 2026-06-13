@@ -5,9 +5,9 @@ export interface Env {
   ALLOWED_ORIGIN: string;
 }
 
-export type Role = 'superuser' | 'admin' | 'moderator' | 'user';
-export type UserStatus = 'pending' | 'approved' | 'blocked';
-export type SaleStatus = 'pending' | 'approved' | 'rejected' | 'duplicate';
+export type Role = "superuser" | "admin" | "moderator" | "user";
+export type UserStatus = "pending" | "approved" | "blocked";
+export type SaleStatus = "pending" | "approved" | "rejected" | "duplicate";
 
 export interface AuthUser {
   id: string;

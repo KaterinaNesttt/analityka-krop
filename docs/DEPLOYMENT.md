@@ -30,7 +30,7 @@ Current configured values:
 - Compatibility date: `2026-06-06`
 - D1 binding: `DB`
 - D1 database name: `anal`
-- Migrations dir: `migrations`
+- Migrations dir: `worker/migrations`
 - Env var: `ALLOWED_ORIGIN`
 
 Worker package scripts from `worker/package.json`:
@@ -71,10 +71,10 @@ npx wrangler d1 migrations apply anal --local
 Seed:
 
 ```bash
-npx wrangler d1 execute anal --remote --file=./seed.sql
+npx wrangler d1 execute anal --remote --file=./worker/seed.sql
 ```
 
-Before running commands, verify the working directory and `wrangler.toml` path because the root config points to `worker/src/index.ts`, while worker scripts run from `worker/`.
+Root `wrangler.toml` points to `worker/src/index.ts` and `worker/migrations`. Worker package scripts can be run from `worker/`; direct root commands should use `./worker/seed.sql` for seed data.
 
 ## CORS
 

@@ -19,7 +19,14 @@ export function AuthPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate(user.status === "approved" ? (user.role === "user" ? "/analytics" : "/dashboard") : "/pending", { replace: true });
+      navigate(
+        user.status === "approved"
+          ? user.role === "user"
+            ? "/analytics"
+            : "/dashboard"
+          : "/pending",
+        { replace: true },
+      );
     }
   }, [user, loading, navigate]);
 
@@ -31,7 +38,9 @@ export function AuthPage() {
       toast.success("Вхід виконано");
     } catch (err: any) {
       toast.error(err?.message ?? "Не вдалося увійти");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
   const onRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +56,9 @@ export function AuthPage() {
       }
     } catch (err: any) {
       toast.error(err?.message ?? "Помилка реєстрації");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -63,8 +74,12 @@ export function AuthPage() {
           <CardHeader>
             <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
               <TabsList className="w-full">
-                <TabsTrigger value="login" className="flex-1">Вхід</TabsTrigger>
-                <TabsTrigger value="register" className="flex-1">Реєстрація</TabsTrigger>
+                <TabsTrigger value="login" className="flex-1">
+                  Вхід
+                </TabsTrigger>
+                <TabsTrigger value="register" className="flex-1">
+                  Реєстрація
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
@@ -73,11 +88,25 @@ export function AuthPage() {
               <form onSubmit={onLogin} className="space-y-4">
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="password">Пароль</Label>
-                  <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
                   {busy ? "..." : "Увійти"}
@@ -91,11 +120,24 @@ export function AuthPage() {
                 </div>
                 <div>
                   <Label htmlFor="remail">Email</Label>
-                  <Input id="remail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input
+                    id="remail"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="rpassword">Пароль (мін. 8)</Label>
-                  <Input id="rpassword" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input
+                    id="rpassword"
+                    type="password"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Після реєстрації акаунт очікує підтвердження адміністратором.
@@ -108,7 +150,9 @@ export function AuthPage() {
           </CardContent>
         </Card>
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          <Link to="/" className="hover:underline">На головну</Link>
+          <Link to="/" className="hover:underline">
+            На головну
+          </Link>
         </p>
       </div>
     </div>

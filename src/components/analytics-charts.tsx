@@ -63,25 +63,25 @@ const PALETTE = [
    ═══════════════════════════════════════════ */
 
 const DISTRICT_POS: Record<string, { x: number; y: number }> = {
-  "Центр": { x: 48, y: 42 },
-  "Балашівка": { x: 30, y: 60 },
+  Центр: { x: 48, y: 42 },
+  Балашівка: { x: 30, y: 60 },
   "Нова Балашівка": { x: 28, y: 48 },
-  "Завадівка": { x: 55, y: 72 },
-  "Олексіївка": { x: 62, y: 38 },
-  "Арнаутове": { x: 58, y: 62 },
-  "Лелеківка": { x: 60, y: 22 },
-  "Попова": { x: 42, y: 18 },
-  "Жадова": { x: 35, y: 28 },
-  "Маслениківка": { x: 22, y: 52 },
-  "Бєляєва": { x: 48, y: 58 },
-  "Ковалівка": { x: 48, y: 12 },
-  "Фортечна": { x: 45, y: 50 },
-  "Кущівка": { x: 68, y: 42 },
+  Завадівка: { x: 55, y: 72 },
+  Олексіївка: { x: 62, y: 38 },
+  Арнаутове: { x: 58, y: 62 },
+  Лелеківка: { x: 60, y: 22 },
+  Попова: { x: 42, y: 18 },
+  Жадова: { x: 35, y: 28 },
+  Маслениківка: { x: 22, y: 52 },
+  Бєляєва: { x: 48, y: 58 },
+  Ковалівка: { x: 48, y: 12 },
+  Фортечна: { x: 45, y: 50 },
+  Кущівка: { x: 68, y: 42 },
   "Велика Балка": { x: 58, y: 48 },
-  "Шкільна": { x: 40, y: 35 },
-  "Озерна": { x: 52, y: 32 },
-  "Молодіжний": { x: 55, y: 28 },
-  "Дружба": { x: 38, y: 55 },
+  Шкільна: { x: 40, y: 35 },
+  Озерна: { x: 52, y: 32 },
+  Молодіжний: { x: 55, y: 28 },
+  Дружба: { x: 38, y: 55 },
   "Попова Балка": { x: 42, y: 18 },
 };
 
@@ -217,7 +217,13 @@ function PriceCorridorsCard({ data, onDetail }: { data: PricePoint[]; onDetail: 
   );
 }
 
-function PriceTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name?: string; value?: number; stroke?: string; color?: string }> }) {
+function PriceTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ name?: string; value?: number; stroke?: string; color?: string }>;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-xl bg-popover/95 px-3 py-2 text-sm border border-white/10 shadow-lg">
@@ -226,7 +232,10 @@ function PriceTooltip({ active, payload }: { active?: boolean; payload?: Array<{
           entry.value != null && (
             <div key={i} className="flex items-center justify-between gap-4 min-w-40">
               <span className="flex items-center gap-2 text-muted-foreground">
-                <span className="h-2 w-2 rounded-full" style={{ background: entry.stroke || entry.color }} />
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: entry.stroke || entry.color }}
+                />
                 {entry.name}
               </span>
               <span className="font-medium tabular-nums">{fmtMoney(entry.value)}</span>
@@ -248,7 +257,8 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
     const bLabel = String(b.label).trim();
     const aFloor = Number.parseInt(aLabel, 10);
     const bFloor = Number.parseInt(bLabel, 10);
-    if (Number.isFinite(aFloor) && Number.isFinite(bFloor) && aFloor !== bFloor) return aFloor - bFloor;
+    if (Number.isFinite(aFloor) && Number.isFinite(bFloor) && aFloor !== bFloor)
+      return aFloor - bFloor;
     return aLabel.localeCompare(bLabel, "uk");
   });
   const total = shown.reduce((s, d) => s + d.value, 0);
@@ -283,7 +293,10 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
         <div className="flex flex-col gap-2.5 text-sm shrink-0">
           {shown.map((item, index) => (
             <div key={item.label} className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: floorColors[index % floorColors.length] }} />
+              <span
+                className="h-2.5 w-2.5 rounded-full shrink-0"
+                style={{ background: floorColors[index % floorColors.length] }}
+              />
               <span className="text-muted-foreground text-xs whitespace-nowrap">{item.label}</span>
             </div>
           ))}
@@ -351,7 +364,13 @@ function SaleTermBarsCard({ data }: { data: ChartItem[] }) {
               tickFormatter={(v: string) => shortLbl(String(v), 8)}
               interval={0}
             />
-            <YAxis stroke="var(--color-muted-foreground)" fontSize={11} axisLine={false} tickLine={false} width={28} />
+            <YAxis
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              axisLine={false}
+              tickLine={false}
+              width={28}
+            />
             <Tooltip content={<SimpleTooltip />} cursor={false} />
             <Bar dataKey="value" radius={[8, 8, 2, 2]} barSize={chartData.length > 8 ? 18 : 30}>
               {chartData.map((_, i) => (
@@ -415,8 +434,13 @@ function DistrictsMapCard({ data, onShowMore }: { data: ChartItem[]; onShowMore:
         <div className="flex flex-col gap-1.5 text-xs shrink-0 justify-center">
           {shown.map((item, i) => (
             <div key={item.label} className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full shrink-0" style={{ background: PALETTE[i % PALETTE.length] }} />
-              <span className="text-muted-foreground truncate max-w-24">{shortLbl(item.label, 14)}</span>
+              <span
+                className="h-2 w-2 rounded-full shrink-0"
+                style={{ background: PALETTE[i % PALETTE.length] }}
+              />
+              <span className="text-muted-foreground truncate max-w-24">
+                {shortLbl(item.label, 14)}
+              </span>
             </div>
           ))}
         </div>
@@ -440,7 +464,13 @@ function DistrictsMapCard({ data, onShowMore }: { data: ChartItem[]; onShowMore:
    5. Торг — gauge / semi-donut
    ═══════════════════════════════════════════ */
 
-function BargainingGaugeCard({ data, avgDiscount }: { data: ChartItem[]; avgDiscount: number | null }) {
+function BargainingGaugeCard({
+  data,
+  avgDiscount,
+}: {
+  data: ChartItem[];
+  avgDiscount: number | null;
+}) {
   return (
     <ChartCard>
       <h3 className="text-lg font-semibold mb-1 text-center">Торг</h3>
@@ -469,8 +499,13 @@ function BargainingGaugeCard({ data, avgDiscount }: { data: ChartItem[]; avgDisc
           </PieChart>
         </ResponsiveContainer>
         {/* Центральний текст */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{ top: "6%" }}>
-          <span className="text-3xl font-bold tabular-nums">{avgDiscount != null ? `${fmtNumber(avgDiscount, 1)}%` : "—"}</span>
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+          style={{ top: "6%" }}
+        >
+          <span className="text-3xl font-bold tabular-nums">
+            {avgDiscount != null ? `${fmtNumber(avgDiscount, 1)}%` : "—"}
+          </span>
           <span className="text-xs text-muted-foreground">середній</span>
         </div>
       </div>
@@ -478,7 +513,10 @@ function BargainingGaugeCard({ data, avgDiscount }: { data: ChartItem[]; avgDisc
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-xs -mt-2">
         {data.map((item, i) => (
           <div key={item.label} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full" style={{ background: PALETTE[i % PALETTE.length] }} />
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: PALETTE[i % PALETTE.length] }}
+            />
             <span className="text-muted-foreground">{item.label}</span>
           </div>
         ))}
@@ -487,7 +525,13 @@ function BargainingGaugeCard({ data, avgDiscount }: { data: ChartItem[]; avgDisc
   );
 }
 
-function GaugeTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name?: string; value?: number }> }) {
+function GaugeTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ name?: string; value?: number }>;
+}) {
   if (!active || !payload?.length) return null;
   const item = payload[0];
   return (
@@ -502,7 +546,15 @@ function GaugeTooltip({ active, payload }: { active?: boolean; payload?: Array<{
    Модалка — повний графік усіх районів
    ═══════════════════════════════════════════ */
 
-function DistrictsFullModal({ open, onOpenChange, data }: { open: boolean; onOpenChange: (v: boolean) => void; data: ChartItem[] }) {
+function DistrictsFullModal({
+  open,
+  onOpenChange,
+  data,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  data: ChartItem[];
+}) {
   const chartData = stableScatterRows(mergeDuplicateRows(data));
 
   return (
@@ -515,7 +567,11 @@ function DistrictsFullModal({ open, onOpenChange, data }: { open: boolean; onOpe
         <div className="max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
           <div style={{ height: Math.max(320, chartData.length * 34) }}>
             <ResponsiveContainer>
-              <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
+              <BarChart
+                data={chartData}
+                layout="vertical"
+                margin={{ top: 10, right: 20, bottom: 10, left: 10 }}
+              >
                 <defs>
                   {chartData.map((_, i) => {
                     const t = mirrorRatio(i, chartData.length);
@@ -529,8 +585,18 @@ function DistrictsFullModal({ open, onOpenChange, data }: { open: boolean; onOpe
                     );
                   })}
                 </defs>
-                <CartesianGrid strokeDasharray="3 6" horizontal={false} stroke="rgba(255,255,255,0.06)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
+                <CartesianGrid
+                  strokeDasharray="3 6"
+                  horizontal={false}
+                  stroke="rgba(255,255,255,0.06)"
+                />
+                <XAxis
+                  type="number"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={12}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <YAxis
                   type="category"
                   dataKey="label"
@@ -568,7 +634,13 @@ function ChartCard({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SimpleTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload?: ChartItem }> }) {
+function SimpleTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload?: ChartItem }>;
+}) {
   if (!active || !payload?.length) return null;
   const item = payload[0]?.payload;
   if (!item) return null;
@@ -605,8 +677,12 @@ function shortLbl(v: string, max = 14): string {
   return v.length > max ? `${v.slice(0, max - 1)}…` : v;
 }
 
-function priceAxisTicks(data: Array<PricePoint & { initialPrice: number; finalPrice: number }>): number[] {
-  const values = data.flatMap((point) => [point.initialPrice, point.finalPrice]).filter((value) => Number.isFinite(value));
+function priceAxisTicks(
+  data: Array<PricePoint & { initialPrice: number; finalPrice: number }>,
+): number[] {
+  const values = data
+    .flatMap((point) => [point.initialPrice, point.finalPrice])
+    .filter((value) => Number.isFinite(value));
   if (!values.length) return [];
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -676,7 +752,9 @@ function lerpColor(from: string, to: string, t: number): string {
 
 function hexRgb(hex: string) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : { r: 0, g: 0, b: 0 };
+  return m
+    ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) }
+    : { r: 0, g: 0, b: 0 };
 }
 
 function hashLabel(value: string): number {

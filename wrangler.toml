@@ -8,7 +8,7 @@ account_id = "7ca9a7fab54e9acdd7d234f1547058bc"
 binding = "DB"
 database_name = "anal"
 database_id = "1cdd05a3-11b0-447d-ae91-ac0bcfff20d0"
-migrations_dir = "migrations"
+migrations_dir = "worker/migrations"
 
 [observability.logs]
 enabled = true
