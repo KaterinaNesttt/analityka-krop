@@ -164,8 +164,10 @@ async function cacheVersion(env: Env, entity: string): Promise<number> {
 
 async function cacheHeaders(entity: string, env: Env, req: Request, variant = ''): Promise<Headers> {
   const url = new URL(req.url);
+  const sortedEntries = [...url.searchParams.entries()].sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+  const canonicalQuery = new URLSearchParams(sortedEntries).toString();
   const headers = new Headers({
-    ETag: etagFor(entity, await cacheVersion(env, entity), `${url.pathname}?${url.searchParams.toString()}|${variant}`),
+    ETag: etagFor(entity, await cacheVersion(env, entity), `${url.pathname}?${canonicalQuery}|${variant}`),
     'Cache-Control': 'private, no-cache',
   });
   return headers;
@@ -192,7 +194,11 @@ export async function touchCacheVersion(env: Env, entity: string): Promise<void>
        VALUES (?, 1, ?)
        ON CONFLICT(entity) DO UPDATE SET version = version + 1, updated_at = excluded.updated_at`
     ).bind(entity, nowIso()).run();
-  } catch {}
+  } catch (err) {
+    const logger = (env as any).logger || console;
+    logger.error('touchCacheVersion failed', { entity, error: err });
+    throw err;
+  }
 }
 
 export function err(status: number, message: string, env: Env, req: Request): Response {

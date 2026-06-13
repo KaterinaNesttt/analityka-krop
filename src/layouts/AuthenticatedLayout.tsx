@@ -75,11 +75,12 @@ export function AuthenticatedLayout() {
 
   useEffect(() => {
     if (!user || !online || !queueCount || syncing) return;
-    const key = `${user.id}:${queueCount}`;
+    const userId = user.id;
+    const key = `${userId}:${queueCount}`;
     if (syncAttemptRef.current === key) return;
     syncAttemptRef.current = key;
     setSyncing(true);
-    syncOfflineQueue(user.id)
+    syncOfflineQueue(userId)
       .then((count) => {
         if (count) {
           toast.success(`Синхронізовано: ${count}`);
@@ -91,7 +92,7 @@ export function AuthenticatedLayout() {
       })
       .catch(() => toast.error("Не вдалося синхронізувати офлайн-чергу"))
       .finally(() => {
-        getOfflineQueue(user.id).then((rows) => setQueueCount(rows.length));
+        getOfflineQueue(userId).then((rows) => setQueueCount(rows.length));
         setSyncing(false);
       });
   }, [user, online, queueCount, syncing, queryClient]);

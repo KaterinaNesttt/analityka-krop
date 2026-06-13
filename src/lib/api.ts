@@ -171,9 +171,19 @@ export async function syncOfflineQueue(userId: string): Promise<number> {
   const rows = await getOfflineQueue(userId);
   let synced = 0;
   for (const item of rows) {
-    await api(item.path, { method: item.method, body: item.body, query: item.query });
-    await removeOfflineQueueItem(item.id);
-    synced += 1;
+    try {
+      await api(item.path, { method: item.method, body: item.body, query: item.query });
+      await removeOfflineQueueItem(item.id);
+      synced += 1;
+    } catch (err: any) {
+      const status = err.status || err.response?.status;
+      if (status && status >= 400 && status < 500) {
+        await removeOfflineQueueItem(item.id);
+        continue;
+      }
+      console.error('syncOfflineQueue item failed:', err);
+      continue;
+    }
   }
   return synced;
 }
