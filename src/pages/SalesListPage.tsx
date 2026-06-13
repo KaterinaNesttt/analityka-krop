@@ -44,7 +44,7 @@ export function SalesListPage() {
     <PageShell>
       <PageHeader title="Продажі" />
 
-      <div className="mb-4 hidden items-center justify-between gap-3 rounded-md border border-white/10 bg-black/35 px-4 py-3 shadow-[0_18px_45px_rgba(0,0,0,0.22)] backdrop-blur-md md:flex">
+      <div className="mb-4 hidden items-center justify-between gap-3 rounded-md border border-white/10 bg-black/55 px-4 py-3 shadow-[0_8px_18px_rgba(0,0,0,0.16)] md:flex">
         <div>
           <div className="text-sm font-medium text-foreground">База продажів</div>
           <div className="text-xs text-muted-foreground">
@@ -99,7 +99,7 @@ export function SalesListPage() {
       </div>
 
       {filtersOpen && (
-        <div className="mb-4 rounded-md border border-white/10 bg-black/40 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24)] backdrop-blur-md md:p-5">
+        <div className="mb-4 rounded-md border border-white/10 bg-black/55 p-4 shadow-[0_8px_18px_rgba(0,0,0,0.16)] md:p-5">
           <FiltersBar
             value={filters}
             onChange={setFilters}
@@ -109,7 +109,7 @@ export function SalesListPage() {
         </div>
       )}
 
-      <div className="hidden overflow-hidden rounded-md border border-white/10 bg-black/45 shadow-[0_22px_60px_rgba(0,0,0,0.32)] backdrop-blur-md md:block">
+      <div className="hidden overflow-hidden rounded-md border border-white/10 bg-black/55 shadow-[0_10px_22px_rgba(0,0,0,0.2)] md:block">
         <div className="max-h-[calc(100vh-13rem)] overflow-auto">
           <table className="w-full table-fixed text-sm">
             <colgroup>
@@ -121,7 +121,7 @@ export function SalesListPage() {
               <col className="w-[12%]" />
               <col className="w-[13%]" />
             </colgroup>
-            <thead className="sticky top-0 z-10 bg-black/70 text-[11px] uppercase tracking-wide text-muted-foreground backdrop-blur-md">
+            <thead className="sticky top-0 z-10 bg-black/85 text-[11px] uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left">Район/ЖК</th>
                 <th className="px-4 py-3 text-left">Поверх</th>

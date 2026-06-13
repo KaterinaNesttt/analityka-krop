@@ -111,7 +111,8 @@ export const AppSidebar = React.memo(function AppSidebar({
       </nav>
 
       <div className="shrink-0 space-y-3  p-4">
-        <Button className="px-4 py-3 text-sm w-full justify-between text-sidebar-foreground/76">
+        <Button asChild className="px-4 py-3 text-sm w-full justify-between text-sidebar-foreground/76">
+          <div>
           <div className="truncate  font-medium text-sidebar-foreground">{userTitle}</div>
           <Button
             type="button"
@@ -123,6 +124,7 @@ export const AppSidebar = React.memo(function AppSidebar({
           >
             <LogOut className="h-4 w-4" />
           </Button>
+          </div>
         </Button>
 
         <div className="flex gap-2">

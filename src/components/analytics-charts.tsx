@@ -402,7 +402,7 @@ function DistrictsMapCard({ data, onShowMore }: { data: ChartItem[]; onShowMore:
             src="/krop-map.png"
             alt=""
             className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
-            style={{ mixBlendMode: "multiply", opacity: 0.55, filter: "contrast(1.2)" }}
+            style={{ opacity: 0.5 }}
             draggable={false}
           />
           {shown.map((item, i) => {
