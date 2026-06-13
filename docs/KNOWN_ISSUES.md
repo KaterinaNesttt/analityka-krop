@@ -38,3 +38,9 @@ Several frontend pages and Worker modules use `any`. Avoid broad type rewrites u
 ## Analytics Implementation
 
 Analytics loads approved sales into memory and aggregates in Worker code. This is simple but may need SQL aggregation/pagination if data volume grows.
+
+## Offline Limits
+
+Offline mode works after the user has opened the app and loaded the needed data online at least once.
+
+Only sale creation and prepared CSV import are queued offline. Telegram parsing, moderation, user management, role changes, blocking, and deletion require online API access.

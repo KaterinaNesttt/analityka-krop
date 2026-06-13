@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, isNetworkError } from "@/lib/api";
 import { PageHeader, PageShell, StatCard } from "@/components/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,14 +35,14 @@ export function SaleDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["sales"], refetchType: "none" });
       queryClient.invalidateQueries({ queryKey: ["approved-sales"], refetchType: "none" });
       queryClient.invalidateQueries({ queryKey: ["mod-list"], refetchType: "none" });
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(isNetworkError(e) ? "Модерація доступна лише онлайн" : e.message); }
   };
   const del = async () => {
     if (!confirm("Видалити запис?")) return;
     try {
       await api(`/api/sales/${id}`, { method: "DELETE" });
       toast.success("Видалено"); navigate("/sales");
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(isNetworkError(e) ? "Видалення доступне лише онлайн" : e.message); }
   };
 
   return (

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { api } from "@/lib/api";
+import { api, getCurrentUserId, isNetworkError } from "@/lib/api";
+import { enqueueOfflineRequest } from "@/lib/offline-store";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,17 +69,32 @@ function TelegramImport() {
       const r = await api<{ parsed: any }>("/api/import/telegram-text", { method: "POST", body: { text } });
       setParsed(r.parsed);
       toast.success("Розпізнано. Перевірте та виправте поля.");
-    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+    } catch (e: any) { toast.error(isNetworkError(e) ? "Розпізнавання доступне лише онлайн" : e.message); } finally { setBusy(false); }
   };
 
   const save = async () => {
+    const payload = { ...parsed, status: isStaff ? status : undefined };
     try {
       setBusy(true);
-      const payload = { ...parsed, status: isStaff ? status : undefined };
       await api("/api/sales", { method: "POST", body: payload });
       toast.success("Збережено");
       setText(""); setParsed(null);
-    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+    } catch (e: any) {
+      if (isNetworkError(e)) {
+        const userId = getCurrentUserId();
+        if (userId) {
+          try {
+            await enqueueOfflineRequest({ userId, path: "/api/sales", method: "POST", body: payload, label: "Telegram-продаж" });
+            toast.success("Збережено в офлайн-чергу");
+            setText(""); setParsed(null);
+          } catch {
+            toast.error("Не вдалося зберегти офлайн");
+          }
+        } else {
+          toast.error("Офлайн-збереження недоступне без сесії");
+        }
+      } else { toast.error(e.message); }
+    } finally { setBusy(false); }
   };
 
   return (
@@ -185,30 +201,46 @@ function CsvImport() {
   };
 
   const doImport = async () => {
+    const items = csvRows.map((r) => {
+      const o: any = {};
+      for (const [field] of FIELDS) {
+        const idx = mapping[field];
+        if (idx !== undefined && idx !== "") o[field] = r[Number(idx)]?.trim() || null;
+      }
+      return o;
+    });
+    const body = {
+      rows: items,
+      file_name: fileName,
+      status: isStaff ? status : undefined,
+    };
     try {
       setBusy(true);
-      const items = csvRows.map((r) => {
-        const o: any = {};
-        for (const [field] of FIELDS) {
-          const idx = mapping[field];
-          if (idx !== undefined && idx !== "") o[field] = r[Number(idx)]?.trim() || null;
-        }
-        return o;
-      });
       const r = await api<{ total: number; created: number; duplicates: number; errors: number }>(
         "/api/import/csv",
         {
           method: "POST",
-          body: {
-            rows: items,
-            file_name: fileName,
-            status: isStaff ? status : undefined,
-          },
+          body,
         },
       );
       toast.success(`Створено: ${r.created}, дублікатів: ${r.duplicates}, помилок: ${r.errors}`);
       setCsvRows([]); setHeaders([]); setMapping({});
-    } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+    } catch (e: any) {
+      if (isNetworkError(e)) {
+        const userId = getCurrentUserId();
+        if (userId) {
+          try {
+            await enqueueOfflineRequest({ userId, path: "/api/import/csv", method: "POST", body, label: `CSV: ${fileName || "без назви"}` });
+            toast.success("Імпорт збережено в офлайн-чергу");
+            setCsvRows([]); setHeaders([]); setMapping({});
+          } catch {
+            toast.error("Не вдалося зберегти офлайн");
+          }
+        } else {
+          toast.error("Офлайн-збереження недоступне без сесії");
+        }
+      } else { toast.error(e.message); }
+    } finally { setBusy(false); }
   };
 
   return (

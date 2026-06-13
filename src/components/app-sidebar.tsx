@@ -4,6 +4,7 @@ import { LogOut, Moon, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Card } from "./ui/card";
 
 interface NavItem {
   to: string;
@@ -109,11 +110,22 @@ export const AppSidebar = React.memo(function AppSidebar({
       </nav>
 
       <div className="shrink-0 space-y-3  p-4">
-        <div className="asset-team-pill  px-4 py-3 text-xs text-sidebar-foreground/76">
+        <Button className="px-4 py-3 text-sm w-full justify-between text-sidebar-foreground/76">
           <div className="truncate  font-medium text-sidebar-foreground">{userTitle}</div>
-        </div>
-
+                    <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-label="Вийти"
+            className="border-0 bg-transparent text-destructive/50 shadow-none hover:bg-transparent hover:text-destructive/90"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </Button>
+        
         <div className="flex gap-2">
+          {/*
           <Button
             type="button"
             variant="outline"
@@ -124,17 +136,8 @@ export const AppSidebar = React.memo(function AppSidebar({
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+                 */}
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            aria-label="Вийти"
-            className="asset-cta-pill flex-1 border-0 bg-transparent text-sidebar-foreground shadow-none hover:bg-transparent hover:text-sidebar-foreground"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </aside>

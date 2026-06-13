@@ -2,6 +2,17 @@
 
 Base URL задається через `VITE_API_URL`. Усі endpoint-и Worker мають CORS і повертають JSON. Помилки повертаються як `{ "error": string }`.
 
+## Cache Validation
+
+GET endpoints для великих читань підтримують `ETag`:
+
+- `GET /api/sales`
+- `GET /api/sales/:id`
+- `GET /api/users`
+- `GET /api/imports`
+
+Клієнт може надсилати `If-None-Match`. Якщо version stamp не змінився, API повертає `304` без body. Відповіді мають `Cache-Control: private, no-cache`. Формат JSON body для `200` не змінюється.
+
 ## Auth
 
 ### `POST /api/auth/register`

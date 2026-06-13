@@ -1,14 +1,15 @@
 import type { Env } from './types';
-import { json, err, nowIso, uid } from './utils';
+import { cachedJson, json, err, nowIso, uid, notModified, touchCacheVersion } from './utils';
 import { requireRole } from './middleware';
 
 export async function listUsers(req: Request, env: Env): Promise<Response> {
   const u = await requireRole(req, env, ['admin']);
   if (u instanceof Response) return u;
+  const cached = await notModified('users', env, req, u.role); if (cached) return cached;
   const { results } = await env.DB.prepare(
     'SELECT id, email, name, role, status, created_at, last_login_at FROM users ORDER BY created_at DESC',
   ).all();
-  return json({ users: results }, {}, env, req);
+  return cachedJson('users', { users: results }, env, req, u.role);
 }
 
 export async function approveUser(req: Request, env: Env, id: string): Promise<Response> {
@@ -16,6 +17,7 @@ export async function approveUser(req: Request, env: Env, id: string): Promise<R
   if (u instanceof Response) return u;
   await env.DB.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').bind('approved', nowIso(), id).run();
   await audit(env, u.id, 'user.approve', 'user', id);
+  await touchCacheVersion(env, 'users');
   return json({ ok: true }, {}, env, req);
 }
 
@@ -30,6 +32,7 @@ export async function setRole(req: Request, env: Env, id: string): Promise<Respo
   if ((role === 'superuser' || target.role === 'superuser') && u.role !== 'superuser') return err(403, 'Недостатньо прав', env, req);
   await env.DB.prepare('UPDATE users SET role = ?, updated_at = ? WHERE id = ?').bind(role, nowIso(), id).run();
   await audit(env, u.id, 'user.role', 'user', id, JSON.stringify({ role }));
+  await touchCacheVersion(env, 'users');
   return json({ ok: true }, {}, env, req);
 }
 
@@ -43,6 +46,7 @@ export async function blockUser(req: Request, env: Env, id: string): Promise<Res
   const status = body?.unblock ? 'approved' : 'blocked';
   await env.DB.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').bind(status, nowIso(), id).run();
   await audit(env, u.id, status === 'blocked' ? 'user.block' : 'user.unblock', 'user', id);
+  await touchCacheVersion(env, 'users');
   return json({ ok: true, status }, {}, env, req);
 }
 

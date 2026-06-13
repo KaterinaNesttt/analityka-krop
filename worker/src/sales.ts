@@ -1,5 +1,5 @@
 import type { Env } from './types';
-import { json, err, uid, nowIso } from './utils';
+import { cachedJson, json, err, uid, nowIso, notModified, touchCacheVersion } from './utils';
 import { requireApproved, requireRole } from './middleware';
 
 
@@ -63,6 +63,7 @@ function money(v: unknown): number | null {
 
 export async function listSales(req: Request, env: Env): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
+  const cached = await notModified('sales', env, req, u.role); if (cached) return cached;
   const forUser = u.role === 'user';
   const url = new URL(req.url);
   const filters = parseFilters(url);
@@ -79,17 +80,18 @@ export async function listSales(req: Request, env: Env): Promise<Response> {
   const orderBy = sortMap[sort] ?? 'created_at DESC';
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '200', 10), 1000);
   const { results } = await env.DB.prepare(`SELECT ${fields} FROM sales${sql} ORDER BY ${orderBy} LIMIT ?`).bind(...params, limit).all();
-  return json({ sales: results }, {}, env, req);
+  return cachedJson('sales', { sales: results }, env, req, u.role);
 }
 
 export async function getSale(req: Request, env: Env, id: string): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
+  const cached = await notModified('sales', env, req, u.role); if (cached) return cached;
   const forUser = u.role === 'user';
   const fields = forUser ? PUBLIC_FIELDS : STAFF_FIELDS;
   const row = await env.DB.prepare(`SELECT ${fields} FROM sales WHERE id = ?`).bind(id).first<any>();
   if (!row) return err(404, 'Не знайдено', env, req);
   if (forUser && row.status !== 'approved') return err(404, 'Не знайдено', env, req);
-  return json({ sale: row }, {}, env, req);
+  return cachedJson('sales', { sale: row }, env, req, u.role);
 }
 
 export async function createSale(req: Request, env: Env): Promise<Response> {
@@ -112,6 +114,7 @@ export async function createSale(req: Request, env: Env): Promise<Response> {
     id, clean(body.district), clean(body.floor), clean(body.characteristics), clean(body.sale_term),
     initialPrice, finalPrice, clean(body.comment), status, now, now,
   ).run();
+  await touchCacheVersion(env, 'sales');
   return json({ id, status, message: 'Дані відправлено на перевірку' }, { status: 201 }, env, req);
 }
 
@@ -129,6 +132,7 @@ export async function updateSale(req: Request, env: Env, id: string): Promise<Re
   sets.push('updated_at = ?'); params.push(nowIso());
   params.push(id);
   await env.DB.prepare(`UPDATE sales SET ${sets.join(', ')} WHERE id = ?`).bind(...params).run();
+  await touchCacheVersion(env, 'sales');
   return json({ ok: true }, {}, env, req);
 }
 
@@ -137,11 +141,13 @@ export async function changeStatus(req: Request, env: Env, id: string, status: '
   const now = nowIso();
   await env.DB.prepare('UPDATE sales SET status = ?, updated_at = ? WHERE id = ?')
     .bind(status, now, id).run();
+  await touchCacheVersion(env, 'sales');
   return json({ ok: true, status }, {}, env, req);
 }
 
 export async function deleteSale(req: Request, env: Env, id: string): Promise<Response> {
   const u = await requireRole(req, env, ['admin']); if (u instanceof Response) return u;
   await env.DB.prepare('DELETE FROM sales WHERE id = ?').bind(id).run();
+  await touchCacheVersion(env, 'sales');
   return json({ ok: true }, {}, env, req);
 }

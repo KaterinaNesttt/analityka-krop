@@ -1,17 +1,26 @@
 const CACHE_NAME = 'kropyvnytskyi-property-insights-v1';
 const APP_SHELL = [
   '/',
-  '/icons/site.webmanifest',
+  '/manifest.webmanifest',
+  '/favicon.ico',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
-  '/icons/maskable-192x192.png',
-  '/icons/maskable-512x512.png',
+  '/icons/icon-maskable-192x192.png',
+  '/icons/icon-maskable-512x512.png',
   '/icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)),
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
+        APP_SHELL.map((url) =>
+          fetch(url)
+            .then((response) => response.ok ? cache.put(url, response) : undefined)
+            .catch(() => undefined),
+        ),
+      ),
+    ),
   );
   self.skipWaiting();
 });

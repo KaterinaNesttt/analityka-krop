@@ -2,6 +2,14 @@
 // Якщо змінна не задана — використовується відносний шлях, що зручно для self-host
 // (фронтенд + Worker на одному домені) або для проксі через Pages Functions.
 
+import {
+  getCachedResponse,
+  getOfflineQueue,
+  removeOfflineQueueItem,
+  saveCachedResponse,
+  type OfflineQueueItem,
+} from './offline-store';
+
 const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
 const DEFAULT_API_URL = import.meta.env.DEV ? '' : 'https://analityka-krop-api.roman-v-shkurenko.workers.dev';
 const BASE_URL: string = configuredApiUrl || DEFAULT_API_URL;
@@ -34,6 +42,13 @@ export class ApiError extends Error {
   }
 }
 
+export class ApiNetworkError extends Error {
+  constructor(message = 'Мережа недоступна') {
+    super(message);
+    this.name = 'ApiNetworkError';
+  }
+}
+
 interface ReqOpts {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
@@ -42,6 +57,25 @@ interface ReqOpts {
 }
 
 let refreshing: Promise<boolean> | null = null;
+
+export function getCurrentUserId(): string | null {
+  const token = getAccess();
+  if (!token) return null;
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='));
+    const data = JSON.parse(json);
+    return typeof data.sub === 'string' ? data.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isNetworkError(e: unknown): boolean {
+  return e instanceof ApiNetworkError || e instanceof TypeError || (e as any)?.message?.includes('Failed to fetch');
+}
 
 async function doRefresh(): Promise<boolean> {
   const rt = getRefresh();
@@ -53,14 +87,13 @@ async function doRefresh(): Promise<boolean> {
       body: JSON.stringify({ refresh: rt }),
     });
     if (!res.ok) {
-      clearTokens();
+      if (res.status === 401 || res.status === 403) clearTokens();
       return false;
     }
     const data = await res.json();
     setTokens(data.access, data.refresh);
     return true;
   } catch {
-    clearTokens();
     return false;
   }
 }
@@ -82,22 +115,46 @@ export async function api<T = any>(path: string, opts: ReqOpts = {}): Promise<T>
   const queryString = search.toString();
   const qs = queryString ? `?${queryString}` : '';
   const url = `${BASE_URL}${path}${qs}`;
+  const userId = auth ? getCurrentUserId() : null;
+  const canCache = method === 'GET' && auth && !!userId;
+  const cached = canCache ? await getCachedResponse(userId, url) : null;
 
   const run = async (): Promise<Response> => {
     const headers: Record<string, string> = {};
     if (body) headers['Content-Type'] = 'application/json';
+    if (cached?.etag) headers['If-None-Match'] = cached.etag;
     if (auth) {
       const t = getAccess();
       if (t) headers['Authorization'] = `Bearer ${t}`;
     }
-    return fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    try {
+      return await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    } catch {
+      throw new ApiNetworkError();
+    }
   };
 
-  let res = await run();
+  let res: Response;
+  try {
+    res = await run();
+  } catch (e) {
+    if (canCache && cached) return cached.data as T;
+    throw e;
+  }
   if (res.status === 401 && auth && getRefresh()) {
     if (!refreshing) refreshing = doRefresh().finally(() => { refreshing = null; });
     const ok = await refreshing;
-    if (ok) res = await run();
+    if (ok) {
+      try {
+        res = await run();
+      } catch (e) {
+        if (canCache && cached) return cached.data as T;
+        throw e;
+      }
+    }
+  }
+  if (res.status === 304 && canCache && cached) {
+    return cached.data as T;
   }
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
@@ -105,8 +162,22 @@ export async function api<T = any>(path: string, opts: ReqOpts = {}): Promise<T>
     throw new ApiError(res.status, msg);
   }
   if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  const data = await res.json() as T;
+  if (canCache) await saveCachedResponse(userId, url, res.headers.get('ETag'), data);
+  return data;
 }
 
+export async function syncOfflineQueue(userId: string): Promise<number> {
+  const rows = await getOfflineQueue(userId);
+  let synced = 0;
+  for (const item of rows) {
+    await api(item.path, { method: item.method, body: item.body, query: item.query });
+    await removeOfflineQueueItem(item.id);
+    synced += 1;
+  }
+  return synced;
+}
+
+export type { OfflineQueueItem };
 export const API_BASE = BASE_URL;
 export const API_CONFIGURED = !!BASE_URL || true; // дозволяємо relative

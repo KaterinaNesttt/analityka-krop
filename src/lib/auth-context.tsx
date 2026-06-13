@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { api, clearTokens, getAccess, setTokens } from './api';
+import { api, clearTokens, getAccess, getCurrentUserId, isNetworkError, setTokens } from './api';
+import { clearOfflineDataForUser, getCachedUser, saveCachedUser } from './offline-store';
 
 export type Role = 'superuser' | 'admin' | 'moderator' | 'user';
 export type UserStatus = 'pending' | 'approved' | 'blocked';
@@ -31,16 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadMe = async () => {
     if (!getAccess()) { setLoading(false); return; }
+    const userId = getCurrentUserId();
     try {
       const data = await api<{ user: AuthUser }>('/api/auth/me');
       setUser(data.user);
+      saveCachedUser(data.user.id, data.user);
       setApiUnreachable(false);
     } catch (e: any) {
-      if (e?.message?.includes('Failed to fetch') || e?.name === 'TypeError') {
+      if (isNetworkError(e)) {
+        const cached = userId ? getCachedUser<AuthUser>(userId) : null;
+        if (cached) setUser(cached);
         setApiUnreachable(true);
-      } else {
+      } else if (e?.status === 401 || e?.status === 403) {
+        if (userId) await clearOfflineDataForUser(userId);
         clearTokens();
         setUser(null);
+      } else {
+        setApiUnreachable(true);
       }
     } finally {
       setLoading(false);
@@ -57,9 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       setTokens(data.access, data.refresh);
       setUser(data.user);
+      saveCachedUser(data.user.id, data.user);
       setApiUnreachable(false);
     } catch (e: any) {
-      if (e?.message?.includes('Failed to fetch')) {
+      if (isNetworkError(e)) {
         setApiUnreachable(true);
         throw new Error('API недоступний. Перевірте VITE_API_URL і деплой Worker.');
       }
@@ -76,10 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    const userId = user?.id ?? getCurrentUserId();
     const rt = localStorage.getItem('ak.refresh');
     try { await api('/api/auth/logout', { method: 'POST', body: { refresh: rt }, auth: false }); } catch { setApiUnreachable(true); }
     clearTokens();
     setUser(null);
+    if (userId) await clearOfflineDataForUser(userId);
   };
 
   return (
