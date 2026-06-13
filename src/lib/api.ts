@@ -177,7 +177,7 @@ export async function syncOfflineQueue(userId: string): Promise<number> {
       synced += 1;
     } catch (err: any) {
       const status = err.status || err.response?.status;
-      if (status && status >= 400 && status < 500) {
+      if (status && status >= 400 && status < 500 && status !== 401 && status !== 403 && status !== 429) {
         await removeOfflineQueueItem(item.id);
         continue;
       }
