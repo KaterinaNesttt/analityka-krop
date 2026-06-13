@@ -3,14 +3,13 @@ import { cachedJson, json, err, uid, nowIso, notModified, touchCacheVersion } fr
 import { requireApproved, requireRole } from './middleware';
 
 
-  const PUBLIC_FIELDS = `id, district, floor, characteristics, sale_term,
-    initial_price, final_price, comment, status, created_at, total_area, land_area,
-    communications, amenities, condition, furniture`;
+const PUBLIC_FIELDS = `id, district, floor, characteristics, sale_term,
+    initial_price, final_price, comment, status, created_at`;
 const STAFF_FIELDS = PUBLIC_FIELDS + ', updated_at';
 
 export interface SaleFilters {
   district?: string; districts?: string[]; price_min?: number; price_max?: number; status?: string;
-  floor?: string; rooms?: string; property_type?: string; sale_term?: string; condition?: string; furniture?: string;
+  floor?: string; sale_term?: string;
 }
 
 export function parseFilters(url: URL): SaleFilters {
@@ -23,11 +22,7 @@ export function parseFilters(url: URL): SaleFilters {
   f.price_min = num('price_min'); f.price_max = num('price_max');
   f.status = get('status');
   f.floor = get('floor');
-  f.rooms = get('rooms');
-  f.property_type = get('property_type');
   f.sale_term = get('sale_term');
-  f.condition = get('condition');
-  f.furniture = get('furniture');
   return f;
 }
 
@@ -40,10 +35,7 @@ export function buildWhere(f: SaleFilters, forUser: boolean): { sql: string; par
   if (f.price_min !== undefined) { w.push('final_price >= ?'); params.push(f.price_min); }
   if (f.price_max !== undefined) { w.push('final_price <= ?'); params.push(f.price_max); }
   if (f.floor) { w.push('floor = ?'); params.push(f.floor); }
-  if (f.rooms) { w.push('rooms = ?'); params.push(f.rooms); }
   if (f.sale_term) { w.push('sale_term = ?'); params.push(f.sale_term); }
-  if (f.condition) { w.push('condition = ?'); params.push(f.condition); }
-  if (f.furniture) { w.push('furniture = ?'); params.push(f.furniture); }
   return { sql: w.length ? ' WHERE ' + w.join(' AND ') : '', params };
 }
 

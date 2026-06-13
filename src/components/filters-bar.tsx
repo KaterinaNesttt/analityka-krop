@@ -13,11 +13,7 @@ export interface SalesFilters {
   price_min?: string;
   price_max?: string;
   floor?: string;
-  rooms?: string;
-  property_type?: string;
   sale_term?: string;
-  condition?: string;
-  furniture?: string;
 }
 
 export function FiltersBar({
@@ -81,11 +77,7 @@ export function FiltersBar({
         <Field label="Ціна від"><Input type="number" value={local.price_min ?? ""} onChange={(e) => upd("price_min", e.target.value)} /></Field>
         <Field label="Ціна до"><Input type="number" value={local.price_max ?? ""} onChange={(e) => upd("price_max", e.target.value)} /></Field>
         <Field label="Поверх"><Input value={local.floor ?? ""} onChange={(e) => upd("floor", e.target.value)} /></Field>
-        <Field label="Кімнати"><Input value={local.rooms ?? ""} onChange={(e) => upd("rooms", e.target.value)} /></Field>
-        <Field label="Тип"><Input value={local.property_type ?? ""} onChange={(e) => upd("property_type", e.target.value)} /></Field>
         <Field label="Термін"><Input value={local.sale_term ?? ""} onChange={(e) => upd("sale_term", e.target.value)} /></Field>
-        <Field label="Стан"><Input value={local.condition ?? ""} onChange={(e) => upd("condition", e.target.value)} /></Field>
-        <Field label="Меблі"><Input value={local.furniture ?? ""} onChange={(e) => upd("furniture", e.target.value)} /></Field>
       </div>
       <div className="flex gap-2 mt-4">
         <Button onClick={apply} size="sm">Застосувати</Button>

@@ -167,16 +167,6 @@ export function SalesListPage() {
 }
 
 function saleCharacteristics(row: any): string {
-  const parts = [
-    row.characteristics,
-    row.total_area,
-    row.land_area,
-    row.communications,
-    row.amenities,
-    row.condition,
-    row.furniture,
-  ]
-    .map((value) => value === undefined || value === null ? "" : String(value).trim())
-    .filter(Boolean);
-  return parts.length ? parts.join("; ") : "—";
+  const value = row.characteristics === undefined || row.characteristics === null ? "" : String(row.characteristics).trim();
+  return value || "—";
 }

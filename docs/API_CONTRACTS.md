@@ -121,8 +121,11 @@ Sale fields:
 Query filters:
 
 - `district`
+- `districts`
 - `price_min`, `price_max`
 - `status`
+- `floor`
+- `sale_term`
 - `sort`
 - `limit`
 
