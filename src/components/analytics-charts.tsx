@@ -242,11 +242,15 @@ function PriceTooltip({ active, payload }: { active?: boolean; payload?: Array<{
    ═══════════════════════════════════════════ */
 
 function FloorsDonutCard({ data }: { data: ChartItem[] }) {
-  const floorLabels = ["1", "2", "3", "4", "5", "6"];
   const floorColors = ["#d4a84f", "#06b6d4", "#8b5cf6", "#10b981", "#ea7c49", "#ec4899"];
-  const shown = data
-    .filter((item) => floorLabels.includes(String(item.label).trim()))
-    .sort((a, b) => floorLabels.indexOf(String(a.label).trim()) - floorLabels.indexOf(String(b.label).trim()));
+  const shown = [...data].sort((a, b) => {
+    const aLabel = String(a.label).trim();
+    const bLabel = String(b.label).trim();
+    const aFloor = Number.parseInt(aLabel, 10);
+    const bFloor = Number.parseInt(bLabel, 10);
+    if (Number.isFinite(aFloor) && Number.isFinite(bFloor) && aFloor !== bFloor) return aFloor - bFloor;
+    return aLabel.localeCompare(bLabel, "uk");
+  });
   const total = shown.reduce((s, d) => s + d.value, 0);
 
   return (
@@ -268,8 +272,8 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
                 cornerRadius={4}
                 strokeWidth={0}
               >
-                {shown.map((item) => (
-                  <Cell key={item.label} fill={floorColors[floorLabels.indexOf(String(item.label).trim())]} />
+                {shown.map((item, index) => (
+                  <Cell key={item.label} fill={floorColors[index % floorColors.length]} />
                 ))}
               </Pie>
               <Tooltip content={<DonutTooltip total={total} />} />
@@ -277,9 +281,9 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
           </ResponsiveContainer>
         </div>
         <div className="flex flex-col gap-2.5 text-sm shrink-0">
-          {shown.map((item) => (
+          {shown.map((item, index) => (
             <div key={item.label} className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: floorColors[floorLabels.indexOf(String(item.label).trim())] }} />
+              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: floorColors[index % floorColors.length] }} />
               <span className="text-muted-foreground text-xs whitespace-nowrap">{item.label}</span>
             </div>
           ))}
