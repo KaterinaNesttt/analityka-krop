@@ -22,6 +22,15 @@ API client:
 - у production fallback — Worker URL;
 - додає `Authorization: Bearer <access>`;
 - при `401` пробує `/api/auth/refresh` і повторює запит.
+- кешує успішні GET JSON-відповіді в IndexedDB з ETag;
+- при `304` або network error повертає останню cached відповідь, якщо вона є.
+
+Offline:
+
+- Service Worker кешує app shell і статичні assets після першого завантаження.
+- Останній авторизований користувач кешується локально для offline boot.
+- Черга IndexedDB використовується тільки для створення продажів і CSV-імпорту.
+- Staff-мутації модерації/користувачів/видалення виконуються тільки online.
 
 ## Backend Worker
 
@@ -55,5 +64,5 @@ API client:
 ## Storage
 
 - Основне сховище: Cloudflare D1.
-- Таблиці: `users`, `refresh_tokens`, `sales`, `imports`, `audit_logs`.
+- Таблиці: `users`, `refresh_tokens`, `sales`, `imports`, `audit_logs`, `cache_versions`.
 - Міграції лежать у `worker/migrations`.

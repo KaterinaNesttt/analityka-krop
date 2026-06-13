@@ -102,7 +102,7 @@ export function AnalyticsPage() {
           {/* Метрики */}
           <section className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Metric icon={<BadgeDollarSign className="h-5 w-5" />} label="Середня ціна" value={fmtMoney(data.avgPrice)} />
-            <Metric icon={<MapPinned className="h-5 w-5" />} label="Найактивніший район" value={data.topDistrict?.label ?? "—"} />
+            <Metric icon={<MapPinned className="h-5 w-5" />} label="Найактивніший" value={data.topDistrict?.label ?? "—"} />
             <Metric icon={<DoorOpen className="h-5 w-5" />} label="Найчастіший поверх" value={data.topFloor?.label ?? "—"} />
             <Metric icon={<SlidersHorizontal className="h-5 w-5" />} label="Без ціни продажу" value={fmtNumber(data.withoutFinalPrice)} />
           </section>
@@ -118,12 +118,7 @@ export function AnalyticsPage() {
             avgDiscount={data.avgDiscount}
           />
 
-          {/* Leaderboards */}
-          <section className="grid gap-4 lg:grid-cols-3">
-            <Leaderboard title="Район/ЖК" rows={data.districtRowsSorted} empty="Район не заповнено." />
-            <Leaderboard title="Поверхи" rows={data.floorRowsSorted} empty="Поверх не заповнено." />
-            <Leaderboard title="Термін продажу" rows={data.termRowsSorted} empty="Термін не заповнено." />
-          </section>
+
         </>
       )}
     </PageShell>
@@ -212,14 +207,16 @@ function buildAnalytics(rows: Sale[], filters: SalesFilters) {
 
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <Card className="surface-stat">
-      <CardContent className="p-4">
+    <Card className="overflow-hidden">
+      <CardContent className="glass-outpress-edge p-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="text-sm text-muted-foreground">{label}</div>
-            <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
+          <div>
+            <div className="flex h-6 w-6 items-center justify-center text-primary">{icon}</div>
+            <div className="text-xs text-muted-foreground">{label}</div>
           </div>
-          <div className="surface-vault flex h-10 w-10 items-center justify-center rounded-2xl text-primary">{icon}</div>
+          <div className="min-w-0">
+            <div className="mt-2 text-lg font-semibold tabular-nums">{value}</div>
+          </div>
         </div>
       </CardContent>
     </Card>

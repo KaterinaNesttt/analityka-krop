@@ -1,5 +1,5 @@
 import type { Env } from './types';
-import { json, err, uid, nowIso } from './utils';
+import { cachedJson, json, err, uid, nowIso, notModified, touchCacheVersion } from './utils';
 import { requireRole } from './middleware';
 
 // Простий парсер тексту з Telegram. Витягує очевидні поля.
@@ -95,13 +95,16 @@ export async function importCsv(req: Request, env: Env): Promise<Response> {
   await env.DB.prepare(
     'INSERT INTO imports (id, source_type, file_name, raw_text, imported_by, total_rows, created_count, duplicate_count, error_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
   ).bind(uid(), 'csv', body?.file_name ?? null, null, u.id, rows.length, created, dup, errs, now).run();
+  await touchCacheVersion(env, 'sales');
+  await touchCacheVersion(env, 'imports');
   return json({ total: rows.length, created, duplicates: dup, errors: errs }, {}, env, req);
 }
 
 export async function listImports(req: Request, env: Env): Promise<Response> {
   const u = await requireRole(req, env, ['admin', 'moderator']); if (u instanceof Response) return u;
+  const cached = await notModified('imports', env, req, u.role); if (cached) return cached;
   const { results } = await env.DB.prepare(
     'SELECT id, source_type, file_name, total_rows, created_count, duplicate_count, error_count, created_at FROM imports ORDER BY created_at DESC LIMIT 100',
   ).all();
-  return json({ imports: results }, {}, env, req);
+  return cachedJson('imports', { imports: results }, env, req, u.role);
 }

@@ -98,5 +98,7 @@ For code changes:
 
 - Frontend: `npm run build`
 - Worker: from worker context, `npm run typecheck` or `npm run build`
+- Apply D1 migrations before relying on API `ETag/304` cache validation.
+- After deploy, open the app online once so Service Worker and IndexedDB caches are populated.
 
 For documentation-only changes, build is not required.

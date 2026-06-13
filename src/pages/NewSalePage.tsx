@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { api } from "@/lib/api";
+import { api, getCurrentUserId, isNetworkError } from "@/lib/api";
+import { enqueueOfflineRequest } from "@/lib/offline-store";
 import { PageHeader, PageShell } from "@/components/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,22 @@ export function NewSalePage() {
       toast.success("Дані відправлено на перевірку");
       navigate("/sales");
     } catch (e: any) {
-      toast.error(e.message);
+      if (isNetworkError(e)) {
+        const userId = getCurrentUserId();
+        if (userId) {
+          try {
+            await enqueueOfflineRequest({ userId, path: "/api/sales", method: "POST", body: payload, label: "Новий продаж" });
+            toast.success("Збережено в офлайн-чергу");
+            navigate("/sales");
+          } catch {
+            toast.error("Не вдалося зберегти офлайн");
+          }
+        } else {
+          toast.error("Офлайн-збереження недоступне без сесії");
+        }
+      } else {
+        toast.error(e.message);
+      }
     } finally { setBusy(false); }
   };
 

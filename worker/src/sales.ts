@@ -1,15 +1,16 @@
 import type { Env } from './types';
-import { json, err, uid, nowIso } from './utils';
+import { cachedJson, json, err, uid, nowIso, notModified, touchCacheVersion } from './utils';
 import { requireApproved, requireRole } from './middleware';
 
 
-const PUBLIC_FIELDS = `id, property_type, district, rooms, total_area,
-  floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
-  initial_price, final_price, currency, sale_date, source_type, comment, status, created_at`;
+  const PUBLIC_FIELDS = `id, property_type, district, rooms, total_area,
+    floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
+    initial_price, final_price, currency, sale_date, source_type, comment, status, created_at`;
 const STAFF_FIELDS = PUBLIC_FIELDS + ', updated_at';
 
 export interface SaleFilters {
-  district?: string; price_min?: number; price_max?: number; status?: string;
+  district?: string; districts?: string[]; price_min?: number; price_max?: number; status?: string;
+  floor?: string; rooms?: string; property_type?: string; sale_term?: string; condition?: string; furniture?: string;
 }
 
 export function parseFilters(url: URL): SaleFilters {
@@ -18,8 +19,15 @@ export function parseFilters(url: URL): SaleFilters {
   const get = (k: string) => p.get(k) ?? undefined;
   const num = (k: string) => { const v = p.get(k); return v ? Number(v) : undefined; };
   f.district = get('district');
+  f.districts = [...p.getAll('districts'), ...p.getAll('districts[]')].map((v) => v.trim()).filter(Boolean);
   f.price_min = num('price_min'); f.price_max = num('price_max');
   f.status = get('status');
+  f.floor = get('floor');
+  f.rooms = get('rooms');
+  f.property_type = get('property_type');
+  f.sale_term = get('sale_term');
+  f.condition = get('condition');
+  f.furniture = get('furniture');
   return f;
 }
 
@@ -27,9 +35,16 @@ export function buildWhere(f: SaleFilters, forUser: boolean): { sql: string; par
   const w: string[] = []; const params: any[] = [];
   if (forUser) w.push("status = 'approved'");
   else if (f.status) { w.push('status = ?'); params.push(f.status); }
-  if (f.district) { w.push('district = ?'); params.push(f.district); }
+  if (f.districts?.length) { w.push(`district IN (${f.districts.map(() => '?').join(', ')})`); params.push(...f.districts); }
+  else if (f.district) { w.push('district = ?'); params.push(f.district); }
   if (f.price_min !== undefined) { w.push('final_price >= ?'); params.push(f.price_min); }
   if (f.price_max !== undefined) { w.push('final_price <= ?'); params.push(f.price_max); }
+  if (f.floor) { w.push('floor = ?'); params.push(f.floor); }
+  if (f.rooms) { w.push('rooms = ?'); params.push(f.rooms); }
+  if (f.property_type) { w.push('property_type = ?'); params.push(f.property_type); }
+  if (f.sale_term) { w.push('sale_term = ?'); params.push(f.sale_term); }
+  if (f.condition) { w.push('condition = ?'); params.push(f.condition); }
+  if (f.furniture) { w.push('furniture = ?'); params.push(f.furniture); }
   return { sql: w.length ? ' WHERE ' + w.join(' AND ') : '', params };
 }
 
@@ -48,6 +63,7 @@ function money(v: unknown): number | null {
 
 export async function listSales(req: Request, env: Env): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
+  const cached = await notModified('sales', env, req, u.role); if (cached) return cached;
   const forUser = u.role === 'user';
   const url = new URL(req.url);
   const filters = parseFilters(url);
@@ -64,17 +80,18 @@ export async function listSales(req: Request, env: Env): Promise<Response> {
   const orderBy = sortMap[sort] ?? 'created_at DESC';
   const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '200', 10), 1000);
   const { results } = await env.DB.prepare(`SELECT ${fields} FROM sales${sql} ORDER BY ${orderBy} LIMIT ?`).bind(...params, limit).all();
-  return json({ sales: results }, {}, env, req);
+  return cachedJson('sales', { sales: results }, env, req, u.role);
 }
 
 export async function getSale(req: Request, env: Env, id: string): Promise<Response> {
   const u = await requireApproved(req, env); if (u instanceof Response) return u;
+  const cached = await notModified('sales', env, req, u.role); if (cached) return cached;
   const forUser = u.role === 'user';
   const fields = forUser ? PUBLIC_FIELDS : STAFF_FIELDS;
   const row = await env.DB.prepare(`SELECT ${fields} FROM sales WHERE id = ?`).bind(id).first<any>();
   if (!row) return err(404, 'Не знайдено', env, req);
   if (forUser && row.status !== 'approved') return err(404, 'Не знайдено', env, req);
-  return json({ sale: row }, {}, env, req);
+  return cachedJson('sales', { sale: row }, env, req, u.role);
 }
 
 export async function createSale(req: Request, env: Env): Promise<Response> {
@@ -97,6 +114,7 @@ export async function createSale(req: Request, env: Env): Promise<Response> {
     id, clean(body.district), clean(body.floor), clean(body.characteristics), clean(body.sale_term),
     initialPrice, finalPrice, clean(body.comment), status, now, now,
   ).run();
+  await touchCacheVersion(env, 'sales');
   return json({ id, status, message: 'Дані відправлено на перевірку' }, { status: 201 }, env, req);
 }
 
@@ -114,6 +132,7 @@ export async function updateSale(req: Request, env: Env, id: string): Promise<Re
   sets.push('updated_at = ?'); params.push(nowIso());
   params.push(id);
   await env.DB.prepare(`UPDATE sales SET ${sets.join(', ')} WHERE id = ?`).bind(...params).run();
+  await touchCacheVersion(env, 'sales');
   return json({ ok: true }, {}, env, req);
 }
 
@@ -122,11 +141,13 @@ export async function changeStatus(req: Request, env: Env, id: string, status: '
   const now = nowIso();
   await env.DB.prepare('UPDATE sales SET status = ?, updated_at = ? WHERE id = ?')
     .bind(status, now, id).run();
+  await touchCacheVersion(env, 'sales');
   return json({ ok: true, status }, {}, env, req);
 }
 
 export async function deleteSale(req: Request, env: Env, id: string): Promise<Response> {
   const u = await requireRole(req, env, ['admin']); if (u instanceof Response) return u;
   await env.DB.prepare('DELETE FROM sales WHERE id = ?').bind(id).run();
+  await touchCacheVersion(env, 'sales');
   return json({ ok: true }, {}, env, req);
 }

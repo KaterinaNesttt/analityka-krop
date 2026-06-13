@@ -62,7 +62,7 @@ export function DashboardPage() {
     <PageShell>
       {/* Hero */}
       <section className="mb-5 grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <Card className="surface-primary bg-secondary glass-edge p-5 lg:p-6">
+        <Card className=" p-5 lg:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Підтверджена база</div>
@@ -84,7 +84,7 @@ export function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="surface-upgrade">
+        <Card className="">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Якість даних</CardTitle>
           </CardHeader>
@@ -115,11 +115,7 @@ export function DashboardPage() {
         avgDiscount={data.avgDiscount}
       />
 
-      {/* Leaderboards */}
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Leaderboard title="Термін продажу" rows={data.termRowsSorted} empty="Термін не заповнено." />
-        <Leaderboard title="Поверхи" rows={data.floorRowsSorted} empty="Поверх не заповнено." />
-      </section>
+
     </PageShell>
   );
 }
@@ -210,7 +206,7 @@ function buildDashboardData(input: Sale[]) {
 
 function MetricCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <Card className="surface-vault overflow-hidden">
+    <Card className="overflow-hidden">
       <CardContent className="glass-outpress-edge p-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -235,16 +231,66 @@ function HeroFact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ProgressRow({ label, value, total }: { label: string; value: number; total: number }) {
+function lerpColor(from: string, to: string, t: number) {
+  const clampedT = Math.max(0, Math.min(1, t));
+
+  const fromHex = from.replace("#", "");
+  const toHex = to.replace("#", "");
+
+  const fromR = parseInt(fromHex.slice(0, 2), 16);
+  const fromG = parseInt(fromHex.slice(2, 4), 16);
+  const fromB = parseInt(fromHex.slice(4, 6), 16);
+
+  const toR = parseInt(toHex.slice(0, 2), 16);
+  const toG = parseInt(toHex.slice(2, 4), 16);
+  const toB = parseInt(toHex.slice(4, 6), 16);
+
+  const r = Math.round(fromR + (toR - fromR) * clampedT);
+  const g = Math.round(fromG + (toG - fromG) * clampedT);
+  const b = Math.round(fromB + (toB - fromB) * clampedT);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function ProgressRow({
+  label,
+  value,
+  total,
+  index = 0,
+  count = 1,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  index?: number;
+  count?: number;
+}) {
   const width = total ? Math.round((value / total) * 100) : 0;
+  const safeWidth = Math.max(0, Math.min(100, width));
+
+  const t = count > 1 ? index / (count - 1) : 0;
+
+  const topColor = lerpColor("#8b5cf6", "#06b6d4", t);
+  const bottomColor = lerpColor("#6d28d9", "#0891b2", t);
+
   return (
     <div>
       <div className="mb-1 flex items-center justify-between gap-3 text-sm">
         <span className="text-muted-foreground">{label}</span>
-        <span className="tabular-nums">{fmtNumber(value)} / {fmtNumber(total)}</span>
+        <span className="tabular-nums">
+          {fmtNumber(value)} / {fmtNumber(total)}
+        </span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${width}%` }} />
+
+      <div className="h-4 overflow-hidden rounded-[2px_8px_8px_2px] bg-muted">
+        <div
+          className="h-full rounded-[2px_8px_8px_2px]"
+          style={{
+            width: `${safeWidth}%`,
+            background: `linear-gradient(90deg, ${topColor} 0%, ${bottomColor} 100%)`,
+            opacity: 0.95,
+          }}
+        />
       </div>
     </div>
   );

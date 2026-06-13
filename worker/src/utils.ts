@@ -133,7 +133,8 @@ export function corsHeaders(env: Env, req: Request): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match',
+    'Access-Control-Expose-Headers': 'ETag',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
@@ -144,6 +145,60 @@ export function json(data: unknown, init: ResponseInit = {}, env?: Env, req?: Re
   headers.set('Content-Type', 'application/json; charset=utf-8');
   if (env && req) for (const [k, v] of Object.entries(corsHeaders(env, req))) headers.set(k, v);
   return new Response(JSON.stringify(data), { ...init, headers });
+}
+
+function etagFor(entity: string, version: number, variant: string): string {
+  let hash = 5381;
+  for (let i = 0; i < variant.length; i++) hash = ((hash << 5) + hash) ^ variant.charCodeAt(i);
+  return `W/"ak-${entity}-${version}-${(hash >>> 0).toString(36)}"`;
+}
+
+async function cacheVersion(env: Env, entity: string): Promise<number> {
+  try {
+    const row = await env.DB.prepare('SELECT version FROM cache_versions WHERE entity = ?').bind(entity).first<{ version: number }>();
+    return row?.version ?? 1;
+  } catch {
+    return 1;
+  }
+}
+
+async function cacheHeaders(entity: string, env: Env, req: Request, variant = ''): Promise<Headers> {
+  const url = new URL(req.url);
+  const sortedEntries = [...url.searchParams.entries()].sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+  const canonicalQuery = new URLSearchParams(sortedEntries).toString();
+  const headers = new Headers({
+    ETag: etagFor(entity, await cacheVersion(env, entity), `${url.pathname}?${canonicalQuery}|${variant}`),
+    'Cache-Control': 'private, no-cache',
+  });
+  return headers;
+}
+
+export async function notModified(entity: string, env: Env, req: Request, variant = ''): Promise<Response | null> {
+  const headers = await cacheHeaders(entity, env, req, variant);
+  if (req.headers.get('If-None-Match') === headers.get('ETag')) {
+    if (env && req) for (const [k, v] of Object.entries(corsHeaders(env, req))) headers.set(k, v);
+    return new Response(null, { status: 304, headers });
+  }
+  return null;
+}
+
+export async function cachedJson(entity: string, data: unknown, env: Env, req: Request, variant = ''): Promise<Response> {
+  const headers = await cacheHeaders(entity, env, req, variant);
+  return json(data, { headers }, env, req);
+}
+
+export async function touchCacheVersion(env: Env, entity: string): Promise<void> {
+  try {
+    await env.DB.prepare(
+      `INSERT INTO cache_versions (entity, version, updated_at)
+       VALUES (?, 1, ?)
+       ON CONFLICT(entity) DO UPDATE SET version = version + 1, updated_at = excluded.updated_at`
+    ).bind(entity, nowIso()).run();
+  } catch (err) {
+    const logger = (env as any).logger || console;
+    logger.error('touchCacheVersion failed', { entity, error: err });
+    throw err;
+  }
 }
 
 export function err(status: number, message: string, env: Env, req: Request): Response {

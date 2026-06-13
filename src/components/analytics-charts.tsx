@@ -104,7 +104,6 @@ export function ChartsSection({
   pricePoints,
   floorRows,
   termRows,
-  districtRows,
   allDistrictRows,
   discountBuckets,
   avgDiscount,
@@ -124,7 +123,7 @@ export function ChartsSection({
       {/* Row 2: Термін + Райони + Торг */}
       <section className="mb-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <SaleTermBarsCard data={termRows} />
-        <DistrictsMapCard data={districtRows} onShowMore={() => setShowDistrictsModal(true)} />
+        <DistrictsMapCard data={allDistrictRows} onShowMore={() => setShowDistrictsModal(true)} />
         <BargainingGaugeCard data={discountBuckets} avgDiscount={avgDiscount} />
       </section>
 
@@ -142,6 +141,18 @@ export function ChartsSection({
    ═══════════════════════════════════════════ */
 
 function PriceCorridorsCard({ data, onDetail }: { data: PricePoint[]; onDetail: () => void }) {
+  const validPoints = data.filter(
+    (point): point is PricePoint & { initialPrice: number; finalPrice: number } =>
+      typeof point.initialPrice === "number" && typeof point.finalPrice === "number",
+  );
+  const chartData = validPoints
+    .map((point) => ({ ...point, diff: Math.abs(point.initialPrice - point.finalPrice) }))
+    .sort((a, b) => b.diff - a.diff)
+    .slice(0, Math.max(1, Math.ceil(validPoints.length / 3)))
+    .sort((a, b) => a.idx - b.idx)
+    .map(({ diff, ...point }) => point);
+  const priceTicks = priceAxisTicks(chartData);
+
   return (
     <ChartCard>
       <div className="flex items-center justify-between mb-2">
@@ -157,38 +168,46 @@ function PriceCorridorsCard({ data, onDetail }: { data: PricePoint[]; onDetail: 
       </div>
       <div className="h-64 mt-2">
         <ResponsiveContainer>
-          <AreaChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id="pc-area-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.32} />
-                <stop offset="50%" stopColor="#06b6d4" stopOpacity={0.1} />
-                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.01} />
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.24} />
+                <stop offset="55%" stopColor="#06b6d4" stopOpacity={0.08} />
+                <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(255,255,255,0.05)" />
+            <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(255,255,255,0.04)" />
             <XAxis dataKey="idx" hide />
-            <YAxis hide />
+            <YAxis
+              ticks={priceTicks}
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={formatPriceTick}
+              width={58}
+            />
             <Tooltip content={<PriceTooltip />} />
             <Area
               type="monotone"
               dataKey="initialPrice"
-              stroke="rgba(255,255,255,0.22)"
-              strokeWidth={2}
-              strokeDasharray="6 4"
-              fill="none"
-              dot={false}
-              connectNulls
-              name="Стартова"
-            />
-            <Area
-              type="monotone"
-              dataKey="finalPrice"
               stroke="#06b6d4"
               strokeWidth={2.5}
               fill="url(#pc-area-fill)"
               dot={false}
               connectNulls
               activeDot={{ r: 5, fill: "#06b6d4", stroke: "#fff", strokeWidth: 2 }}
+              name="Стартова"
+            />
+            <Area
+              type="monotone"
+              dataKey="finalPrice"
+              stroke="rgba(255,255,255,0.22)"
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              fill="none"
+              dot={false}
+              connectNulls
               name="Продаж"
             />
           </AreaChart>
@@ -223,7 +242,12 @@ function PriceTooltip({ active, payload }: { active?: boolean; payload?: Array<{
    ═══════════════════════════════════════════ */
 
 function FloorsDonutCard({ data }: { data: ChartItem[] }) {
-  const total = data.reduce((s, d) => s + d.value, 0);
+  const floorLabels = ["1", "2", "3", "4", "5", "6"];
+  const floorColors = ["#d4a84f", "#06b6d4", "#8b5cf6", "#10b981", "#ea7c49", "#ec4899"];
+  const shown = data
+    .filter((item) => floorLabels.includes(String(item.label).trim()))
+    .sort((a, b) => floorLabels.indexOf(String(a.label).trim()) - floorLabels.indexOf(String(b.label).trim()));
+  const total = shown.reduce((s, d) => s + d.value, 0);
 
   return (
     <ChartCard>
@@ -233,7 +257,7 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
           <ResponsiveContainer>
             <PieChart>
               <Pie
-                data={data}
+                data={shown}
                 dataKey="value"
                 nameKey="label"
                 cx="50%"
@@ -244,8 +268,8 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
                 cornerRadius={4}
                 strokeWidth={0}
               >
-                {data.map((_, i) => (
-                  <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                {shown.map((item) => (
+                  <Cell key={item.label} fill={floorColors[floorLabels.indexOf(String(item.label).trim())]} />
                 ))}
               </Pie>
               <Tooltip content={<DonutTooltip total={total} />} />
@@ -253,9 +277,9 @@ function FloorsDonutCard({ data }: { data: ChartItem[] }) {
           </ResponsiveContainer>
         </div>
         <div className="flex flex-col gap-2.5 text-sm shrink-0">
-          {data.slice(0, 8).map((item, i) => (
+          {shown.map((item) => (
             <div key={item.label} className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: PALETTE[i % PALETTE.length] }} />
+              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: floorColors[floorLabels.indexOf(String(item.label).trim())] }} />
               <span className="text-muted-foreground text-xs whitespace-nowrap">{item.label}</span>
             </div>
           ))}
@@ -292,15 +316,17 @@ function DonutTooltip({
    ═══════════════════════════════════════════ */
 
 function SaleTermBarsCard({ data }: { data: ChartItem[] }) {
+  const chartData = centerPeakRows(data);
+
   return (
     <ChartCard>
       <h3 className="text-lg font-semibold mb-2">Термін продажу</h3>
       <div className="h-56">
         <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 10, right: 5, bottom: 5, left: 5 }}>
+          <BarChart data={chartData} margin={{ top: 10, right: 8, bottom: 18, left: 0 }}>
             <defs>
-              {data.map((_, i) => {
-                const t = data.length > 1 ? i / (data.length - 1) : 0;
+              {chartData.map((_, i) => {
+                const t = mirrorRatio(i, chartData.length);
                 const topColor = lerpColor("#8b5cf6", "#06b6d4", t);
                 const bottomColor = lerpColor("#6d28d9", "#0891b2", t);
                 return (
@@ -312,11 +338,19 @@ function SaleTermBarsCard({ data }: { data: ChartItem[] }) {
               })}
             </defs>
             <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="label" hide />
-            <YAxis hide />
+            <XAxis
+              dataKey="label"
+              stroke="var(--color-muted-foreground)"
+              fontSize={11}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(v: string) => shortLbl(String(v), 8)}
+              interval={0}
+            />
+            <YAxis stroke="var(--color-muted-foreground)" fontSize={11} axisLine={false} tickLine={false} width={28} />
             <Tooltip content={<SimpleTooltip />} cursor={false} />
-            <Bar dataKey="value" radius={[8, 8, 2, 2]} barSize={data.length > 8 ? 18 : 30}>
-              {data.map((_, i) => (
+            <Bar dataKey="value" radius={[8, 8, 2, 2]} barSize={chartData.length > 8 ? 18 : 30}>
+              {chartData.map((_, i) => (
                 <Cell key={i} fill={`url(#tb-${i})`} />
               ))}
             </Bar>
@@ -332,7 +366,8 @@ function SaleTermBarsCard({ data }: { data: ChartItem[] }) {
    ═══════════════════════════════════════════ */
 
 function DistrictsMapCard({ data, onShowMore }: { data: ChartItem[]; onShowMore: () => void }) {
-  const shown = data.slice(0, 8);
+  const shown = [...data].sort((a, b) => b.value - a.value).slice(0, 5);
+  const maxValue = Math.max(...shown.map((item) => item.value), 1);
 
   return (
     <ChartCard>
@@ -349,6 +384,10 @@ function DistrictsMapCard({ data, onShowMore }: { data: ChartItem[]; onShowMore:
           />
           {shown.map((item, i) => {
             const pos = getDistrictPos(item.label, i, shown.length);
+            const ratio = item.value / maxValue;
+            const size = 4 + ratio * 6;
+            const blur = 14 + ratio * 24;
+            const spread = 5 + ratio * 8;
             return (
               <div
                 key={item.label}
@@ -358,10 +397,10 @@ function DistrictsMapCard({ data, onShowMore }: { data: ChartItem[]; onShowMore:
                   left: `${pos.x}%`,
                   top: `${pos.y}%`,
                   transform: "translate(-50%, -50%)",
-                  width: 14,
-                  height: 14,
+                  width: size,
+                  height: size,
                   background: PALETTE[i % PALETTE.length],
-                  boxShadow: `0 0 14px 5px ${PALETTE[i % PALETTE.length]}55`,
+                  boxShadow: `0 0 ${blur}px ${spread}px ${PALETTE[i % PALETTE.length]}66`,
                 }}
               />
             );
@@ -460,38 +499,53 @@ function GaugeTooltip({ active, payload }: { active?: boolean; payload?: Array<{
    ═══════════════════════════════════════════ */
 
 function DistrictsFullModal({ open, onOpenChange, data }: { open: boolean; onOpenChange: (v: boolean) => void; data: ChartItem[] }) {
+  const chartData = stableScatterRows(mergeDuplicateRows(data));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-card border-white/10">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl max-h-[calc(100vh-2rem)] overflow-hidden bg-card border-white/10">
         <DialogHeader>
           <DialogTitle>Усі райони</DialogTitle>
           <DialogDescription>Розподіл угод по районах та ЖК</DialogDescription>
         </DialogHeader>
-        <div style={{ height: Math.max(320, data.length * 32) }}>
-          <ResponsiveContainer>
-            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
-              <defs>
-                <linearGradient id="dm-bar" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#d4a84f" stopOpacity={0.85} />
-                  <stop offset="100%" stopColor="#d4a84f" stopOpacity={0.4} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 6" horizontal={false} stroke="rgba(255,255,255,0.06)" />
-              <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
-              <YAxis
-                type="category"
-                dataKey="label"
-                stroke="var(--color-muted-foreground)"
-                fontSize={11}
-                width={130}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v: string) => shortLbl(v, 18)}
-              />
-              <Tooltip content={<SimpleTooltip />} cursor={false} />
-              <Bar dataKey="value" fill="url(#dm-bar)" barSize={18} radius={[0, 8, 8, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
+          <div style={{ height: Math.max(320, chartData.length * 34) }}>
+            <ResponsiveContainer>
+              <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
+                <defs>
+                  {chartData.map((_, i) => {
+                    const t = mirrorRatio(i, chartData.length);
+                    const startColor = lerpColor("#8b5cf6", "#06b6d4", t);
+                    const endColor = lerpColor("#6d28d9", "#0891b2", t);
+                    return (
+                      <linearGradient key={i} id={`dm-${i}`} x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor={startColor} stopOpacity={0.95} />
+                        <stop offset="100%" stopColor={endColor} stopOpacity={0.6} />
+                      </linearGradient>
+                    );
+                  })}
+                </defs>
+                <CartesianGrid strokeDasharray="3 6" horizontal={false} stroke="rgba(255,255,255,0.06)" />
+                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis
+                  type="category"
+                  dataKey="label"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  width={130}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v: string) => shortLbl(v, 18)}
+                />
+                <Tooltip content={<SimpleTooltip />} cursor={false} />
+                <Bar dataKey="value" barSize={18} radius={[0, 8, 8, 0]}>
+                  {chartData.map((_, i) => (
+                    <Cell key={i} fill={`url(#dm-${i})`} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -547,6 +601,66 @@ function shortLbl(v: string, max = 14): string {
   return v.length > max ? `${v.slice(0, max - 1)}…` : v;
 }
 
+function priceAxisTicks(data: Array<PricePoint & { initialPrice: number; finalPrice: number }>): number[] {
+  const values = data.flatMap((point) => [point.initialPrice, point.finalPrice]).filter((value) => Number.isFinite(value));
+  if (!values.length) return [];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  if (min === max) return [min];
+  return [min, min + (max - min) / 2, max];
+}
+
+function formatPriceTick(value: number): string {
+  if (Math.abs(value) >= 1_000_000) return `$${fmtNumber(value / 1_000_000, 1)}m`;
+  if (Math.abs(value) >= 1_000) return `$${fmtNumber(value / 1_000, 0)}k`;
+  return fmtMoney(value);
+}
+
+function centerPeakRows(data: ChartItem[]): ChartItem[] {
+  const sorted = [...data].sort((a, b) => b.value - a.value);
+  const positions: number[] = [];
+  const middle = Math.floor(data.length / 2);
+
+  for (let offset = 0; positions.length < data.length; offset++) {
+    const left = middle - offset;
+    const right = middle + offset;
+    if (left >= 0) positions.push(left);
+    if (offset > 0 && right < data.length) positions.push(right);
+  }
+
+  const result = new Array<ChartItem>(data.length);
+  sorted.forEach((item, i) => {
+    result[positions[i]] = item;
+  });
+  return result.filter(Boolean);
+}
+
+function mergeDuplicateRows(data: ChartItem[]): ChartItem[] {
+  const merged = new Map<string, ChartItem>();
+  data.forEach((item) => {
+    const label = String(item.label).trim().replace(/\s+/g, " ");
+    if (!label) return;
+    const key = label.toLowerCase();
+    const existing = merged.get(key);
+    if (existing) {
+      existing.value += item.value;
+    } else {
+      merged.set(key, { label, value: item.value });
+    }
+  });
+  return Array.from(merged.values());
+}
+
+function stableScatterRows(data: ChartItem[]): ChartItem[] {
+  return [...data].sort((a, b) => hashLabel(String(a.label)) - hashLabel(String(b.label)));
+}
+
+function mirrorRatio(index: number, length: number): number {
+  if (length <= 1) return 0;
+  const center = (length - 1) / 2;
+  return Math.abs(index - center) / Math.max(center, 1);
+}
+
 function lerpColor(from: string, to: string, t: number): string {
   const f = hexRgb(from);
   const c = hexRgb(to);
@@ -559,4 +673,17 @@ function lerpColor(from: string, to: string, t: number): string {
 function hexRgb(hex: string) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : { r: 0, g: 0, b: 0 };
+}
+
+function hashLabel(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 2246822507) >>> 0;
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 3266489909) >>> 0;
+  return (hash ^ (hash >>> 16)) >>> 0;
 }

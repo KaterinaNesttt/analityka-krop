@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-label="Дашборд">
+
+<defs>
+  <linearGradient id="edge" x1="12" y1="8" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#FFFFFF" stop-opacity=".96"/>
+    <stop offset=".42" stop-color="#BFD9FF" stop-opacity=".76"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity=".28"/>
+  </linearGradient>
+  <linearGradient id="glass" x1="14" y1="10" x2="50" y2="58" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#FFFFFF" stop-opacity=".40"/>
+    <stop offset=".48" stop-color="#9FC6FF" stop-opacity=".13"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity=".04"/>
+  </linearGradient>
+  <linearGradient id="shine" x1="16" y1="6" x2="48" y2="32" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#FFFFFF" stop-opacity=".75"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="softGlow" x="-35%" y="-35%" width="170%" height="170%">
+    <feDropShadow dx="0" dy="0" stdDeviation="1.8" flood-color="#DCEEFF" flood-opacity=".55"/>
+    <feDropShadow dx="0" dy="2" stdDeviation="3.2" flood-color="#06111E" flood-opacity=".45"/>
+  </filter>
+  <filter id="tinyGlow" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="0" dy="0" stdDeviation="1.1" flood-color="#FFFFFF" flood-opacity=".52"/>
+  </filter>
+</defs>
+
+<g filter="url(#softGlow)" stroke="url(#edge)" stroke-width="2.35" stroke-linecap="round" stroke-linejoin="round">
+
+  <rect x="11" y="13" width="42" height="38" rx="11" fill="url(#glass)"/>
+  <path d="M18 25.5h10.5" opacity=".9"/>
+  <path d="M18 33.5h7" opacity=".55"/>
+  <path d="M18 43V38.5"/>
+  <path d="M27 43V32"/>
+  <path d="M36 43V28"/>
+  <path d="M45 43V23"/>
+  <path d="M34.5 22.5c6.8-3.2 14.4 1.7 14.4 9.2 0 2.6-.9 5-2.5 6.8L39.1 32l-4.6-9.5Z" fill="url(#glass)"/>
+  <path d="M38.9 32.1h10" opacity=".58"/>
+  <path d="M15.5 16.5c9-2.1 22.3-1.7 33 1.1" stroke="url(#shine)" opacity=".75"/>
+
+</g>
+</svg>

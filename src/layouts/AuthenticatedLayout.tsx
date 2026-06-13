@@ -1,36 +1,49 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
-import {
-  LayoutDashboard, BarChart3, Table2, Plus, Upload, ShieldCheck, Users, Settings,
-} from "lucide-react";
+import dashboardIcon from "@/assets/icons/dashboard.svg";
+import analyticsIcon from "@/assets/icons/analytics.svg";
+import salesIcon from "@/assets/icons/sales.svg";
+import addSaleIcon from "@/assets/icons/add-sale.svg";
+import importIcon from "@/assets/icons/import.svg";
+import moderationIcon from "@/assets/icons/moderation.svg";
+import usersIcon from "@/assets/icons/users.svg";
+import settingsIcon from "@/assets/icons/settings.svg";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BackgroundLayer } from "@/components/background-layer";
 import { MobileBottomBar } from "@/components/mobile-bottom-bar";
+import { getOfflineQueue, subscribeOfflineQueue } from "@/lib/offline-store";
+import { syncOfflineQueue } from "@/lib/api";
+import { toast } from "sonner";
 
-interface NavItem { to: string; label: string; icon: LucideIcon; roles?: string[]; }
+interface NavItem { to: string; label: string; icon: string; roles?: string[]; }
 
 const STAFF_ROLES = ["superuser", "admin", "moderator"];
 
 const NAV: NavItem[] = [
-  { to: "/dashboard", label: "Дашборд", icon: LayoutDashboard, roles: STAFF_ROLES },
-  { to: "/analytics", label: "Аналітика", icon: BarChart3 },
-  { to: "/sales", label: "Продажі", icon: Table2 },
-  { to: "/sales/new", label: "Додати продаж", icon: Plus },
-  { to: "/import", label: "Імпорт", icon: Upload, roles: STAFF_ROLES },
-  { to: "/moderation", label: "Модерація", icon: ShieldCheck, roles: ["admin", "moderator"] },
-  { to: "/users", label: "Користувачі", icon: Users, roles: ["admin"] },
-  { to: "/settings", label: "Налаштування", icon: Settings },
+  { to: "/dashboard", label: "Дашборд", icon: dashboardIcon, roles: STAFF_ROLES },
+  { to: "/analytics", label: "Аналітика", icon: analyticsIcon },
+  { to: "/sales", label: "Продажі", icon: salesIcon },
+  { to: "/sales/new", label: "Додати продаж", icon: addSaleIcon },
+  { to: "/import", label: "Імпорт", icon: importIcon, roles: STAFF_ROLES },
+  { to: "/moderation", label: "Модерація", icon: moderationIcon, roles: ["admin", "moderator"] },
+  { to: "/users", label: "Користувачі", icon: usersIcon, roles: ["admin"] },
+  { to: "/settings", label: "Налаштування", icon: settingsIcon },
 ];
 
 export function AuthenticatedLayout() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, apiUnreachable } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { theme, toggle } = useTheme();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
+  const [queueCount, setQueueCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+  const syncAttemptRef = useRef("");
 
   useEffect(() => {
     if (loading) return;
@@ -39,6 +52,50 @@ export function AuthenticatedLayout() {
   }, [user, loading, navigate]);
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  useEffect(() => {
+    const update = () => {
+      if (!navigator.onLine) syncAttemptRef.current = "";
+      setOnline(navigator.onLine);
+    };
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user) { setQueueCount(0); return; }
+    const update = () => getOfflineQueue(user.id).then((rows) => setQueueCount(rows.length));
+    update();
+    return subscribeOfflineQueue(update);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !online || !queueCount || syncing) return;
+    const userId = user.id;
+    const key = `${userId}:${queueCount}`;
+    if (syncAttemptRef.current === key) return;
+    syncAttemptRef.current = key;
+    setSyncing(true);
+    syncOfflineQueue(userId)
+      .then((count) => {
+        if (count) {
+          toast.success(`Синхронізовано: ${count}`);
+          queryClient.invalidateQueries({ queryKey: ["sales"] });
+          queryClient.invalidateQueries({ queryKey: ["approved-sales"] });
+          queryClient.invalidateQueries({ queryKey: ["sales-district-options"] });
+          queryClient.invalidateQueries({ queryKey: ["mod-list"] });
+        }
+      })
+      .catch(() => toast.error("Не вдалося синхронізувати офлайн-чергу"))
+      .finally(() => {
+        getOfflineQueue(userId).then((rows) => setQueueCount(rows.length));
+        setSyncing(false);
+      });
+  }, [user, online, queueCount, syncing, queryClient]);
 
   if (loading || !user || user.status !== "approved") {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Завантаження…</div>;
@@ -79,6 +136,12 @@ export function AuthenticatedLayout() {
           <Outlet />
         </main>
       </div>
+      {(!online || apiUnreachable || queueCount > 0 || syncing) && (
+        <div className="fixed right-3 top-3 z-30 rounded-md border border-white/10 bg-black/70 px-3 py-2 text-xs text-foreground shadow-lg backdrop-blur-md">
+          {syncing ? "Синхронізація…" : !online || apiUnreachable ? "Офлайн-режим" : "Очікує синхронізації"}
+          {queueCount > 0 && <span className="ml-2 text-muted-foreground">{queueCount}</span>}
+        </div>
+      )}
       <MobileBottomBar nav={visibleNav} pathname={pathname} onOpenSidebar={() => setMobileOpen(true)} />
     </div>
   );

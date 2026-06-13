@@ -1,5 +1,5 @@
 import type { Env } from './types';
-import { json, err, uid, nowIso, hashPassword, verifyPassword, signJwt, hmacSha256Hex } from './utils';
+import { json, err, uid, nowIso, hashPassword, verifyPassword, signJwt, hmacSha256Hex, touchCacheVersion } from './utils';
 import { getAuth } from './middleware';
 
 const ACCESS_TTL = 60 * 15; // 15 хв
@@ -45,6 +45,7 @@ export async function register(req: Request, env: Env): Promise<Response> {
   )
     .bind(id, email, ph, name, role, status, now, now)
     .run();
+  await touchCacheVersion(env, 'users');
   return json({ id, email, role, status, name, message: isFirst ? 'Створено першого адміністратора' : 'Заявку відправлено. Очікуйте підтвердження адміністратором.' }, { status: 201 }, env, req);
 }
 
@@ -64,6 +65,7 @@ export async function login(req: Request, env: Env): Promise<Response> {
   if (!ok) return err(401, 'Невірний email або пароль', env, req);
   if (row.status === 'blocked') return err(403, 'Акаунт заблоковано', env, req);
   await env.DB.prepare('UPDATE users SET last_login_at = ? WHERE id = ?').bind(nowIso(), row.id).run();
+  await touchCacheVersion(env, 'users');
   const tokens = await issueTokens(env, row.id, row.role, row.status);
   return json({
     ...tokens,

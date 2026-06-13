@@ -143,6 +143,24 @@ Indexes:
 
 Currently used for user approve/role/block events.
 
+## `cache_versions`
+
+```sql
+CREATE TABLE cache_versions (
+  entity TEXT PRIMARY KEY,
+  version INTEGER NOT NULL DEFAULT 1,
+  updated_at TEXT NOT NULL
+);
+```
+
+Entities:
+
+- `sales`
+- `users`
+- `imports`
+
+Used for API `ETag` generation. Versions are incremented only by mutations that change the related entity cache.
+
 ## Migration Notes
 
 - `0001_init.sql` created the initial schema.
@@ -150,3 +168,4 @@ Currently used for user approve/role/block events.
 - `0003_prune_sales_columns.sql` removed unused sale columns by rebuilding `sales`.
 - `0004_allow_missing_total_area.sql` rebuilt `sales` so `total_area` can be missing.
 - `0005_excel_sales_shape.sql` rebuilt `sales` to match the spreadsheet format.
+- `0006_cache_versions.sql` added cache version stamps for offline/ETag support.
