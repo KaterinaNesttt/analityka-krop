@@ -205,7 +205,7 @@
     border-right: 1px solid rgba(255, 255, 255, 0.045);
     border-bottom: 1px solid rgba(255, 255, 255, 0.035);
 
-    box-shadow: 10px 12px 18px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
   }
 
   .asset-sidebar::before {
@@ -455,6 +455,7 @@
 
   .glass-edge {
     --glass-radius: 24px;
+    --glass-blur: 7px;
 
     position: relative;
     overflow: hidden;
@@ -474,9 +475,8 @@
     border-bottom: 1px solid rgba(12, 24, 38, 0.1);
 
     box-shadow:
-      var(--glass-edge-shadow),
-      var(--glass-edge-inset),
-      inset 1px 0 0 rgba(255, 255, 255, 0.22);
+      inset 0 1px 0 rgba(255, 255, 255, 0.62),
+      inset 1px 0 0 rgba(255, 255, 255, 0.32);
   }
 
   .dark .glass-edge {
@@ -491,11 +491,9 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.045);
 
     box-shadow:
-      var(--glass-edge-shadow),
-      var(--glass-edge-inset),
+      inset 0 1px 0 rgba(255, 255, 255, 0.055),
       inset 1px 0 0 rgba(255, 255, 255, 0.035);
   }
-
   .glass-edge::before,
   .glass-edge::after {
     content: none;
