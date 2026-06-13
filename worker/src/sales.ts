@@ -4,7 +4,8 @@ import { requireApproved, requireRole } from './middleware';
 
 
   const PUBLIC_FIELDS = `id, district, floor, characteristics, sale_term,
-    initial_price, final_price, comment, status, created_at`;
+    initial_price, final_price, comment, status, created_at, total_area, land_area,
+    communications, amenities, condition, furniture`;
 const STAFF_FIELDS = PUBLIC_FIELDS + ', updated_at';
 
 export interface SaleFilters {
