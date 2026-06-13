@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader, PageShell } from "@/components/page-shell";
@@ -7,49 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fmtMoney, fmtNumber } from "@/lib/format";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AreaChart as AreaIcon, BadgeDollarSign, Building2, DoorOpen, Home, MapPinned, SlidersHorizontal, TrendingDown } from "lucide-react";
+import { BadgeDollarSign, DoorOpen, MapPinned, SlidersHorizontal, TrendingDown } from "lucide-react";
+import { ChartsSection, type PricePoint, type ChartItem } from "@/components/analytics-charts";
 
 type Sale = {
   id: string;
-  property_type: string;
   district: string;
-  rooms: number | null;
-  total_area: number | null;
-  floor: number | null;
-  floors_total: number | null;
-  building_type: string | null;
-  land_area: string | null;
-  initial_price: number | null;
-  final_price: number;
-  currency: string;
-  sale_date: string;
+  floor: string | null;
+  characteristics: string | null;
   sale_term: string | null;
+  initial_price: number | null;
+  final_price: number | null;
+  comment: string | null;
   status: string;
 };
-
-type TooltipRow = { label: string; value: string };
-type ChartDatum = Record<string, unknown> & { tooltipRows?: TooltipRow[] };
-
-const GOLD = "#d4a84f";
-const SAGE = "#8d9a70";
-const CYAN = "#4fc3c7";
-
-const PRICE_BUCKETS = [
-  { label: "до $30k", min: 0, max: 30000 },
-  { label: "$30k-$50k", min: 30000, max: 50000 },
-  { label: "$50k-$70k", min: 50000, max: 70000 },
-  { label: "$70k-$100k", min: 70000, max: 100000 },
-  { label: "$100k+", min: 100000, max: Infinity },
-];
-
-const AREA_BUCKETS = [
-  { label: "без площі", min: null, max: null },
-  { label: "до 40 м²", min: 0, max: 40 },
-  { label: "40-70 м²", min: 40, max: 70 },
-  { label: "70-120 м²", min: 70, max: 120 },
-  { label: "120+ м²", min: 120, max: Infinity },
-];
 
 const DISCOUNT_BUCKETS = [
   { label: "без торгу", min: -Infinity, max: 0.01 },
@@ -63,8 +34,8 @@ export function AnalyticsPage() {
   const [filters, setFilters] = useState<SalesFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const sales = useQuery({
-    queryKey: ["approved-sales", filters, "sale_date_desc"],
-    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { status: "approved", ...filters, limit: 1000, sort: "sale_date_desc" } }),
+    queryKey: ["approved-sales", filters, "created_at_desc"],
+    queryFn: () => api<{ sales: Sale[] }>("/api/sales", { query: { status: "approved", ...filters, limit: 1000, sort: "created_at_desc" } }),
   });
 
   const data = useMemo(() => buildAnalytics(sales.data?.sales ?? [], filters), [sales.data, filters]);
@@ -92,6 +63,7 @@ export function AnalyticsPage() {
         </Card>
       ) : (
         <>
+          {/* Hero */}
           <section className="mb-5 grid gap-4 xl:grid-cols-[1fr_0.7fr]">
             <Card className="overflow-hidden">
               <CardContent className="p-5 md:p-6">
@@ -107,7 +79,7 @@ export function AnalyticsPage() {
                     {data.activeFilterLabels.length ? data.activeFilterLabels.map((label) => <Badge key={label} variant="secondary" className="rounded-md">{label}</Badge>) : <Badge variant="secondary" className="rounded-md">Усі дані</Badge>}
                   </div>
                 </div>
-                <div className="mt-6 grid gap-3  sm:grid-cols-3">
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
                   <SummaryCell label="Медіанна ціна" value={fmtMoney(data.medianPrice)} />
                   <SummaryCell label="Середня ціна" value={fmtMoney(data.avgPrice)} />
                   <SummaryCell label="Діапазон" value={`${fmtMoney(data.minPrice)} - ${fmtMoney(data.maxPrice)}`} />
@@ -120,98 +92,37 @@ export function AnalyticsPage() {
                 <CardTitle className="text-base">Швидка статистика</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <InsightLine icon={<Home className="h-4 w-4" />} label="Квартири" value={`${fmtNumber(data.apartmentCount)} угод`} />
-                <InsightLine icon={<Building2 className="h-4 w-4" />} label="Будинки" value={`${fmtNumber(data.houseCount)} угод`} />
+                <InsightLine icon={<MapPinned className="h-4 w-4" />} label="Локацій" value={`${fmtNumber(data.locationCount)} позицій`} />
+                <InsightLine icon={<BadgeDollarSign className="h-4 w-4" />} label="Зі стартовою ціною" value={`${fmtNumber(data.withInitialPrice)} угод`} />
                 <InsightLine icon={<TrendingDown className="h-4 w-4" />} label="Середній торг" value={data.avgDiscount == null ? "—" : `${fmtNumber(data.avgDiscount, 1)}%`} />
               </CardContent>
             </Card>
           </section>
 
+          {/* Метрики */}
           <section className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <Metric icon={<BadgeDollarSign className="h-5 w-5" />} label="Ціна за м²" value={fmtMoney(data.avgPricePerM2)} hint=""  />
-            <Metric icon={<MapPinned className="h-5 w-5" />} label="Найактивніший район" value={data.topDistrict?.label ?? "—"} hint=""  />
-            <Metric icon={<DoorOpen className="h-5 w-5" />} label="Найчастіша кімнатність" value={data.topRooms?.label ?? "—"} hint=""  />
-            <Metric icon={<SlidersHorizontal className="h-5 w-5" />} label="Без площі" value={fmtNumber(data.withoutArea)} hint="" />
+            <Metric icon={<BadgeDollarSign className="h-5 w-5" />} label="Середня ціна" value={fmtMoney(data.avgPrice)} />
+            <Metric icon={<MapPinned className="h-5 w-5" />} label="Найактивніший район" value={data.topDistrict?.label ?? "—"} />
+            <Metric icon={<DoorOpen className="h-5 w-5" />} label="Найчастіший поверх" value={data.topFloor?.label ?? "—"} />
+            <Metric icon={<SlidersHorizontal className="h-5 w-5" />} label="Без ціни продажу" value={fmtNumber(data.withoutFinalPrice)} />
           </section>
 
-          <section className="mb-5 grid gap-4 xl:grid-cols-2">
-            <ChartCard title="Квартири проти будинків" subtitle="">
-              <BarChart data={data.typeComparison} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 12 }}>
-                {renderChartVolumeDefs({ id: "analyticsType", colors: Object.fromEntries(data.typeComparison.map((row, index) => [`c${index}`, row.color])), direction: "horizontal" })}
-                <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} width={82} axisLine={false} tickLine={false} />
-                <Tooltip cursor={false} content={<CleanTooltip />} />
-                <Bar dataKey="value" barSize={30} radius={[0, 18, 18, 0]}>
-                  {data.typeComparison.map((row, index) => <Cell key={row.label} fill={`url(#analyticsType-c${index})`} />)}
-                </Bar>
-              </BarChart>
-            </ChartCard>
+          {/* ═══ НОВІ ГРАФІКИ ═══ */}
+          <ChartsSection
+            pricePoints={data.pricePoints}
+            floorRows={data.floorRows}
+            termRows={data.termRows}
+            districtRows={data.districtRows}
+            allDistrictRows={data.allDistrictRows}
+            discountBuckets={data.discountBuckets}
+            avgDiscount={data.avgDiscount}
+          />
 
-            <ChartCard title="Цінові коридори" subtitle="">
-              <AreaChart data={data.priceBuckets} margin={{ top: 16, right: 20, bottom: 12, left: 0 }}>
-                {renderChartAreaDefs({ id: "analyticsPrice", color: GOLD })}
-                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ stroke: GOLD, strokeWidth: 1, strokeOpacity: 0.35 }} content={<CleanTooltip />} />
-                <Area type="monotone" dataKey="value" stroke={GOLD} fill="url(#analyticsPrice-area)" strokeWidth={3} />
-              </AreaChart>
-            </ChartCard>
-          </section>
-
-          <section className="mb-5 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-            <ChartCard title="Райони" subtitle="">
-              <BarChart data={data.districtRows} layout="vertical" margin={{ top: 14, right: 24, bottom: 14, left: 0 }}>
-                {renderChartVolumeDefs({ id: "analyticsDistrict", colors: { value: GOLD }, direction: "horizontal" })}
-                <CartesianGrid strokeDasharray="2 7" horizontal={false} stroke="rgba(255,255,255,0.07)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="label" tickFormatter={shortLabel} stroke="var(--color-muted-foreground)" fontSize={11} width={112} axisLine={false} tickLine={false} />
-                <Tooltip cursor={false} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill="url(#analyticsDistrict-value)" barSize={24} radius={[0, 18, 18, 0]} />
-              </BarChart>
-            </ChartCard>
-
-            <ChartCard title="Площа" subtitle="">
-              <BarChart data={data.areaBuckets} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
-                {renderChartVolumeDefs({ id: "analyticsArea", colors: { value: SAGE }, direction: "vertical" })}
-                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} axisLine={false} tickLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip cursor={false} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill="url(#analyticsArea-value)" barSize={30} radius={[18, 18, 2, 2]} />
-              </BarChart>
-            </ChartCard>
-          </section>
-
-          <section className="mb-5 grid gap-4 xl:grid-cols-2">
-            <ChartCard title="Кімнатність квартир" subtitle="">
-              <BarChart data={data.roomRows} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
-                {renderChartVolumeDefs({ id: "analyticsRooms", colors: { value: CYAN }, direction: "vertical" })}
-                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip cursor={false} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill="url(#analyticsRooms-value)" barSize={30} radius={[18, 18, 2, 2]} />
-              </BarChart>
-            </ChartCard>
-
-            <ChartCard title="Торг від стартової ціни" subtitle="">
-              <BarChart data={data.discountBuckets} margin={{ top: 14, right: 16, bottom: 12, left: 0 }}>
-                {renderChartVolumeDefs({ id: "analyticsDiscount", colors: { value: GOLD }, direction: "vertical" })}
-                <CartesianGrid strokeDasharray="2 7" vertical={false} stroke="rgba(255,255,255,0.07)" />
-                <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} axisLine={false} tickLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={12} allowDecimals={false} axisLine={false} tickLine={false} />
-                <Tooltip cursor={false} content={<CleanTooltip />} />
-                <Bar dataKey="value" fill="url(#analyticsDiscount-value)" barSize={30} radius={[18, 18, 2, 2]} />
-              </BarChart>
-            </ChartCard>
-          </section>
-
+          {/* Leaderboards */}
           <section className="grid gap-4 lg:grid-cols-3">
-            <Leaderboard title="Типи будинків" rows={data.houseTypes} empty="Тип будинку не заповнено." />
-            <Leaderboard title="Поверхи квартир" rows={data.floorRows} empty="Поверх не заповнено." />
-            <Leaderboard title="Термін продажу" rows={data.termRows} empty="Термін не заповнено." />
+            <Leaderboard title="Район/ЖК" rows={data.districtRowsSorted} empty="Район не заповнено." />
+            <Leaderboard title="Поверхи" rows={data.floorRowsSorted} empty="Поверх не заповнено." />
+            <Leaderboard title="Термін продажу" rows={data.termRowsSorted} empty="Термін не заповнено." />
           </section>
         </>
       )}
@@ -219,180 +130,87 @@ export function AnalyticsPage() {
   );
 }
 
+/* ═══════════════════════════════════════════
+   Data builder
+   ═══════════════════════════════════════════ */
+
 function buildAnalytics(rows: Sale[], filters: SalesFilters) {
   const total = rows.length;
   const prices = rows.map((sale) => sale.final_price).filter(isFiniteNumber);
-  const areaRows = rows.filter((sale) => isFiniteNumber(sale.total_area) && Number(sale.total_area) > 0);
-  const apartments = rows.filter((sale) => sale.property_type === "apartment");
-  const houses = rows.filter((sale) => sale.property_type === "house");
+  const withInitialPrice = rows.filter((sale) => isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0).length;
   const discountValues = rows
-    .filter((sale) => isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0)
+    .filter((sale) => isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0 && isFiniteNumber(sale.final_price))
     .map((sale) => ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) * 100);
 
-  const typeComparison = [
-    buildTypeRow("Квартири", apartments, CYAN),
-    buildTypeRow("Будинки", houses, SAGE),
-  ].filter((row) => row.value > 0);
+  // Цінові коридори — кожна угода, БЕЗ сортування
+  const pricePoints: PricePoint[] = rows.map((sale, i) => ({
+    idx: i + 1,
+    initialPrice: isFiniteNumber(sale.initial_price) && Number(sale.initial_price) > 0 ? Number(sale.initial_price) : null,
+    finalPrice: isFiniteNumber(sale.final_price) ? Number(sale.final_price) : null,
+  }));
 
-  const districtRows = Object.values(groupBy(rows, (sale) => sale.district))
-    .map((items) => {
-      const label = items[0].district;
-      return {
-        label,
-        value: items.length,
-        tooltipRows: [
-          { label: "Угоди", value: fmtNumber(items.length) },
-          { label: "Медіанна ціна", value: fmtMoney(median(items.map((sale) => sale.final_price))) },
-          { label: "Середня за м²", value: fmtMoney(average(items.filter((sale) => sale.total_area).map((sale) => Number(sale.final_price) / Number(sale.total_area)))) },
-        ],
-      };
-    })
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 9);
+  // Райони — БЕЗ сортування для графіку
+  const allDistrictRows: ChartItem[] = Object.values(groupBy(rows, (sale) => sale.district)).map((items) => ({
+    label: items[0].district,
+    value: items.length,
+  }));
+  const districtRows = allDistrictRows.slice(0, 8);
+  const districtRowsSorted = [...allDistrictRows].sort((a, b) => b.value - a.value).slice(0, 9);
 
-  const priceBuckets = PRICE_BUCKETS.map((bucket) => {
-    const items = rows.filter((sale) => sale.final_price >= bucket.min && sale.final_price < bucket.max);
-    return {
-      label: bucket.label,
-      value: items.length,
-      tooltipRows: [
-        { label: "Угоди", value: fmtNumber(items.length) },
-        { label: "Медіанна ціна", value: fmtMoney(median(items.map((sale) => sale.final_price))) },
-      ],
-    };
+  // Поверхи — БЕЗ сортування
+  const floorRows: ChartItem[] = Object.values(groupBy(rows.filter((sale) => sale.floor), (sale) => sale.floor || "Не вказано")).map((items) => ({
+    label: items[0].floor || "Не вказано",
+    value: items.length,
+  }));
+  const floorRowsSorted = [...floorRows].sort((a, b) => b.value - a.value).slice(0, 6);
+
+  // Термін — БЕЗ сортування
+  const termRows: ChartItem[] = Object.values(groupBy(rows.filter((sale) => sale.sale_term), (sale) => sale.sale_term || "Не вказано")).map((items) => ({
+    label: items[0].sale_term || "Не вказано",
+    value: items.length,
+  }));
+  const termRowsSorted = [...termRows].sort((a, b) => b.value - a.value).slice(0, 6);
+
+  // Торг — бакети
+  const discountBuckets: ChartItem[] = DISCOUNT_BUCKETS.map((bucket) => {
+    const cnt = rows.filter((sale) => {
+      if (!isFiniteNumber(sale.initial_price) || Number(sale.initial_price) <= 0 || !isFiniteNumber(sale.final_price)) return bucket.label === "без торгу";
+      const d = ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) * 100;
+      return d >= bucket.min && d < bucket.max;
+    }).length;
+    return { label: bucket.label, value: cnt };
   });
-
-  const areaBuckets = AREA_BUCKETS.map((bucket) => {
-    const items = bucket.min == null
-      ? rows.filter((sale) => !isFiniteNumber(sale.total_area))
-      : rows.filter((sale) => isFiniteNumber(sale.total_area) && Number(sale.total_area) >= bucket.min! && Number(sale.total_area) < bucket.max!);
-    return {
-      label: bucket.label,
-      value: items.length,
-      tooltipRows: [
-        { label: "Угоди", value: fmtNumber(items.length) },
-        { label: "Середня ціна", value: fmtMoney(average(items.map((sale) => sale.final_price))) },
-      ],
-    };
-  });
-
-  const roomRows = Object.values(groupBy(apartments.filter((sale) => sale.rooms), (sale) => `${sale.rooms}-к`))
-    .map((items) => {
-      const label = `${items[0].rooms}-к`;
-      return {
-        label,
-        value: items.length,
-        tooltipRows: [
-          { label: "Квартири", value: fmtNumber(items.length) },
-          { label: "Медіанна ціна", value: fmtMoney(median(items.map((sale) => sale.final_price))) },
-        ],
-      };
-    })
-    .sort((a, b) => b.value - a.value);
-
-  const discountBuckets = DISCOUNT_BUCKETS.map((bucket) => {
-    const items = rows.filter((sale) => {
-      if (!isFiniteNumber(sale.initial_price) || Number(sale.initial_price) <= 0) return bucket.label === "без торгу";
-      const value = ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) * 100;
-      return value >= bucket.min && value < bucket.max;
-    });
-    return {
-      label: bucket.label,
-      value: items.length,
-      tooltipRows: [
-        { label: "Угоди", value: fmtNumber(items.length) },
-        { label: "Середній торг", value: `${fmtNumber(average(items.map(discountForSale)), 1)}%` },
-      ],
-    };
-  });
-
-  const houseTypes = toLeaderboard(houses, (sale) => sale.building_type || "Не вказано", "Угоди");
-  const floorRows = toLeaderboard(apartments, floorLabel, "Квартири");
-  const termRows = toLeaderboard(rows.filter((sale) => sale.sale_term), (sale) => sale.sale_term || "Не вказано", "Угоди", 6);
 
   return {
     total,
-    apartmentCount: apartments.length,
-    houseCount: houses.length,
-    withArea: areaRows.length,
-    withoutArea: total - areaRows.length,
+    withInitialPrice,
+    withoutFinalPrice: total - prices.length,
+    locationCount: Object.keys(groupBy(rows, (sale) => sale.district)).length,
     avgPrice: average(prices),
     medianPrice: median(prices),
     minPrice: prices.length ? Math.min(...prices) : null,
     maxPrice: prices.length ? Math.max(...prices) : null,
-    avgPricePerM2: average(areaRows.map((sale) => Number(sale.final_price) / Number(sale.total_area))),
     avgDiscount: average(discountValues),
     activeFilterLabels: filterLabels(filters),
-    topDistrict: districtRows[0],
-    topRooms: roomRows[0],
-    typeComparison,
+    topDistrict: districtRowsSorted[0],
+    topFloor: floorRowsSorted[0],
+    pricePoints,
     districtRows,
-    priceBuckets,
-    areaBuckets,
-    roomRows,
-    discountBuckets,
-    houseTypes,
+    allDistrictRows,
+    districtRowsSorted,
     floorRows,
+    floorRowsSorted,
     termRows,
+    termRowsSorted,
+    discountBuckets,
   };
 }
 
-function buildTypeRow(label: string, items: Sale[], color: string): ChartDatum & { label: string; value: number; color: string } {
-  return {
-    label,
-    value: items.length,
-    color,
-    tooltipRows: [
-      { label: "Угоди", value: fmtNumber(items.length) },
-      { label: "Середня ціна", value: fmtMoney(average(items.map((sale) => sale.final_price))) },
-      { label: "Медіана", value: fmtMoney(median(items.map((sale) => sale.final_price))) },
-    ],
-  };
-}
+/* ═══════════════════════════════════════════
+   UI components (збережені)
+   ═══════════════════════════════════════════ */
 
-function ChartCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactElement }) {
-  return (
-    <Card className="surface-flow">
-      <CardHeader className="px-6 pb-1 pt-6">
-        <CardTitle className="text-base">{title}</CardTitle>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
-      </CardHeader>
-      <CardContent className="h-80 rounded-[1.25rem] p-4 pt-0">
-        <ResponsiveContainer>{children}</ResponsiveContainer>
-      </CardContent>
-    </Card>
-  );
-}
-
-function renderChartVolumeDefs({ id, colors, direction }: { id: string; colors: Record<string, string>; direction: "horizontal" | "vertical" }) {
-  const horizontal = direction === "horizontal";
-  return (
-    <defs>
-      {Object.entries(colors).map(([key, color]) => (
-        <linearGradient key={key} id={`${id}-${key}`} x1="0" y1="0" x2={horizontal ? "1" : "0"} y2={horizontal ? "0" : "1"}>
-          <stop offset="0%" stopColor={color} stopOpacity={0.62} />
-          <stop offset="38%" stopColor={color} stopOpacity={0.92} />
-          <stop offset="70%" stopColor={color} stopOpacity={0.78} />
-          <stop offset="100%" stopColor={color} stopOpacity={0.48} />
-        </linearGradient>
-      ))}
-    </defs>
-  );
-}
-
-function renderChartAreaDefs({ id, color }: { id: string; color: string }) {
-  return (
-    <defs>
-      <linearGradient id={`${id}-area`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor={color} stopOpacity={0.62} />
-        <stop offset="48%" stopColor={color} stopOpacity={0.22} />
-        <stop offset="100%" stopColor={color} stopOpacity={0.03} />
-      </linearGradient>
-    </defs>
-  );
-}
-
-function Metric({ icon, label, value, hint }: { icon: ReactNode; label: string; value: string; hint: string }) {
+function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <Card className="surface-stat">
       <CardContent className="p-4">
@@ -403,7 +221,6 @@ function Metric({ icon, label, value, hint }: { icon: ReactNode; label: string; 
           </div>
           <div className="surface-vault flex h-10 w-10 items-center justify-center rounded-2xl text-primary">{icon}</div>
         </div>
-        <div className="mt-3 text-xs text-muted-foreground">{hint}</div>
       </CardContent>
     </Card>
   );
@@ -427,7 +244,7 @@ function InsightLine({ icon, label, value }: { icon: ReactNode; label: string; v
   );
 }
 
-function Leaderboard({ title, rows, empty }: { title: string; rows: Array<{ label: string; value: number; tooltipRows?: TooltipRow[] }>; empty: string }) {
+function Leaderboard({ title, rows, empty }: { title: string; rows: Array<{ label: string; value: number }>; empty: string }) {
   const max = Math.max(...rows.map((row) => row.value), 1);
   return (
     <Card className="surface-alpha">
@@ -452,24 +269,6 @@ function Leaderboard({ title, rows, empty }: { title: string; rows: Array<{ labe
   );
 }
 
-function CleanTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ payload?: ChartDatum }>; label?: string }) {
-  if (!active || !payload?.length) return null;
-  const rows = payload[0]?.payload?.tooltipRows ?? [];
-  return (
-    <div className="glass-edge rounded-2xl bg-popover/95 px-3 py-2 text-sm">
-      <div className="mb-1 font-medium">{label}</div>
-      <div className="space-y-1">
-        {rows.map((row) => (
-          <div key={row.label} className="flex min-w-44 items-center justify-between gap-4">
-            <span className="text-muted-foreground">{row.label}</span>
-            <span className="font-medium tabular-nums">{row.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function LoadingGrid() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -478,32 +277,9 @@ function LoadingGrid() {
   );
 }
 
-function toLeaderboard(rows: Sale[], getLabel: (sale: Sale) => string, valueLabel: string, limit = 5) {
-  return Object.values(groupBy(rows, getLabel))
-    .map((items) => ({
-      label: getLabel(items[0]),
-      value: items.length,
-      tooltipRows: [
-        { label: valueLabel, value: fmtNumber(items.length) },
-        { label: "Медіанна ціна", value: fmtMoney(median(items.map((sale) => sale.final_price))) },
-      ],
-    }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, limit);
-}
-
-function floorLabel(sale: Sale): string {
-  if (!sale.floor) return "Не вказано";
-  if (sale.floor === 1) return "1 поверх";
-  if (sale.floor <= 4) return "2-4 поверх";
-  if (sale.floor <= 9) return "5-9 поверх";
-  return "10+ поверх";
-}
-
-function discountForSale(sale: Sale): number {
-  if (!isFiniteNumber(sale.initial_price) || Number(sale.initial_price) <= 0) return 0;
-  return ((Number(sale.initial_price) - Number(sale.final_price)) / Number(sale.initial_price)) * 100;
-}
+/* ═══════════════════════════════════════════
+   Utils
+   ═══════════════════════════════════════════ */
 
 function groupBy<T>(rows: T[], getKey: (row: T) => string): Record<string, T[]> {
   return rows.reduce<Record<string, T[]>>((acc, row) => {
@@ -529,21 +305,10 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-function shortLabel(value: string): string {
-  return value.length > 14 ? `${value.slice(0, 13)}…` : value;
-}
-
 function filterLabels(filters: SalesFilters): string[] {
   const labels: string[] = [];
-  if (filters.date_from) labels.push(`від ${filters.date_from}`);
-  if (filters.date_to) labels.push(`до ${filters.date_to}`);
   if (filters.district) labels.push(filters.district);
-  if (filters.property_type) labels.push(filters.property_type === "apartment" ? "Квартири" : filters.property_type === "house" ? "Будинки" : filters.property_type);
-  if (filters.rooms) labels.push(`${filters.rooms}-к`);
   if (filters.price_min) labels.push(`ціна від ${fmtMoney(Number(filters.price_min))}`);
   if (filters.price_max) labels.push(`ціна до ${fmtMoney(Number(filters.price_max))}`);
-  if (filters.area_min) labels.push(`площа від ${filters.area_min} м²`);
-  if (filters.area_max) labels.push(`площа до ${filters.area_max} м²`);
-  if (filters.condition) labels.push(filters.condition);
   return labels;
 }

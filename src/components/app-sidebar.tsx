@@ -29,7 +29,7 @@ export function AppSidebar({
   const navigate = useNavigate();
 
   return (
-    <aside className={`asset-sidebar flex max-h-190 max-w-46 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground shadow-[18px_18px_16px_black]  ${className}`}>
+    <aside className={`asset-sidebar flex max-h-190 max-w-46 ml-10 mt-2 flex-col rounded-3xl text-sidebar-foreground shadow-[18px_18px_16px_black] backdrop-blur-sm  ${className}`}>
       <div className="px-3 h-16 flex items-center gap-3 ">
         <div>
           <div className="font-semibold leading-tight text-white tracking-[0.08em]">Аналітика</div>

@@ -8,59 +8,27 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DISTRICTS, PROPERTY_TYPES, CURRENCIES } from "@/components/filters-bar";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
 const FIELDS = [
-  ["building_type", "Тип"],
   ["district", "Район *"],
   ["characteristics", "Характеристика"],
-  ["rooms", "Кімнат"],
-  ["total_area", "Площа *"],
-  ["land_area", "Земля"],
-  ["communications", "Комунікації"],
-  ["amenities", "Зручності"],
   ["floor", "Поверх"],
-  ["floors_total", "Поверховість"],
-  ["condition", "Стан"],
-  ["furniture", "Меблі/техніка"],
-  ["sale_term", "Термін"],
+  ["sale_term", "Термін продажу"],
   ["initial_price", "Початкова ціна"],
-  ["final_price", "Фінальна ціна *"],
+  ["final_price", "Продаж ціна"],
   ["comment", "Коментар"],
-  ["comment_extra", "Додатковий коментар"],
 ] as const;
 
 const HEADER_MAP: Record<string, string> = {
-  "тип": "building_type",
-  "район": "district",
   "район/жк": "district",
-  "к-ть кімнат": "rooms",
-  "к-ть кiмнат": "rooms",
-  "кімнат": "rooms",
-  "кiмнат": "rooms",
-  "площа": "total_area",
   "поверх": "floor",
   "характеристика": "characteristics",
-  "земля": "land_area",
-  "комунікації": "communications",
-  "комунiкацiї": "communications",
-  "зручності": "amenities",
-  "зручностi": "amenities",
-  "стан": "condition",
-  "меблі/техніка": "furniture",
-  "меблi/технiка": "furniture",
-  "термін": "sale_term",
-  "термiн": "sale_term",
   "термін продажу": "sale_term",
   "термiн продажу": "sale_term",
-  "ціна стартова": "initial_price",
-  "цiна стартова": "initial_price",
   "старт ціна": "initial_price",
   "старт цiна": "initial_price",
-  "ціна продаж": "final_price",
-  "цiна продаж": "final_price",
   "продаж ціна": "final_price",
   "продаж цiна": "final_price",
   "коментар": "comment",
@@ -155,15 +123,12 @@ function ParsedForm({ value, onChange }: { value: any; onChange: (v: any) => voi
   const u = (k: string, v: any) => onChange({ ...value, [k]: v });
   return (
     <div className="grid grid-cols-2 gap-3 text-sm">
-      <SmallSelect label="Тип" v={value.property_type} on={(x) => u("property_type", x)} opts={PROPERTY_TYPES} />
-      <SmallSelect label="Район" v={value.district ?? ""} on={(x) => u("district", x)} opts={DISTRICTS.map((d) => ({ value: d, label: d }))} />
-      <Field label="Дата"><Input type="date" value={value.sale_date ?? ""} onChange={(e) => u("sale_date", e.target.value)} /></Field>
-      <Field label="Кімнат"><Input type="number" value={value.rooms ?? ""} onChange={(e) => u("rooms", Number(e.target.value) || null)} /></Field>
-      <Field label="Площа"><Input type="number" step="any" value={value.total_area ?? ""} onChange={(e) => u("total_area", Number(e.target.value) || null)} /></Field>
-      <Field label="Поверх"><Input type="number" value={value.floor ?? ""} onChange={(e) => u("floor", Number(e.target.value) || null)} /></Field>
-      <Field label="Поверховість"><Input type="number" value={value.floors_total ?? ""} onChange={(e) => u("floors_total", Number(e.target.value) || null)} /></Field>
-      <Field label="Ціна"><Input type="number" value={value.final_price ?? ""} onChange={(e) => u("final_price", Number(e.target.value) || null)} /></Field>
-      <SmallSelect label="Валюта" v={value.currency ?? "USD"} on={(x) => u("currency", x)} opts={CURRENCIES.map((c) => ({ value: c, label: c }))} />
+      <Field label="Район/ЖК"><Input value={value.district ?? ""} onChange={(e) => u("district", e.target.value)} /></Field>
+      <Field label="Поверх"><Input value={value.floor ?? ""} onChange={(e) => u("floor", e.target.value)} /></Field>
+      <Field label="Термін продажу"><Input value={value.sale_term ?? ""} onChange={(e) => u("sale_term", e.target.value)} /></Field>
+      <Field label="Старт ціна"><Input type="number" value={value.initial_price ?? ""} onChange={(e) => u("initial_price", Number(e.target.value) || null)} /></Field>
+      <Field label="Продаж ціна"><Input type="number" value={value.final_price ?? ""} onChange={(e) => u("final_price", Number(e.target.value) || null)} /></Field>
+      <Field label="Характеристика"><Input value={value.characteristics ?? ""} onChange={(e) => u("characteristics", e.target.value)} /></Field>
       <Field label="Коментар"><Input value={value.comment ?? ""} onChange={(e) => u("comment", e.target.value)} /></Field>
     </div>
   );
@@ -172,10 +137,6 @@ function ParsedForm({ value, onChange }: { value: any; onChange: (v: any) => voi
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1"><Label className="text-xs text-muted-foreground">{label}</Label>{children}</div>;
 }
-function SmallSelect({ label, v, on, opts }: { label: string; v: string; on: (v: string) => void; opts: { value: string; label: string }[] }) {
-  return <Field label={label}><Select value={v || undefined} onValueChange={on}><SelectTrigger><SelectValue placeholder="—" /></SelectTrigger><SelectContent>{opts.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select></Field>;
-}
-
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let cur: string[] = []; let buf = ""; let inQuotes = false;
@@ -205,7 +166,6 @@ function CsvImport() {
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [fileName, setFileName] = useState("");
-  const [propertyType, setPropertyType] = useState<"auto" | "house" | "apartment">("auto");
   const [status, setStatus] = useState<"pending" | "approved">("pending");
   const [busy, setBusy] = useState(false);
 
@@ -215,13 +175,10 @@ function CsvImport() {
     const rows = parseCsv(text);
     if (!rows.length) { toast.error("Порожній файл"); return; }
     setHeaders(rows[0]); setCsvRows(rows.slice(1));
-    const lowerName = f.name.toLowerCase();
-    const detectedType = lowerName.includes("буд") ? "house" : lowerName.includes("кварт") ? "apartment" : propertyType;
-    if (detectedType !== propertyType) setPropertyType(detectedType);
     const m: Record<string, string> = {};
     rows[0].forEach((h, idx) => {
       const key = normalizeHeader(h);
-      const field = key ? HEADER_MAP[key] : detectedType === "apartment" && idx === 0 ? "rooms" : "comment_extra";
+      const field = key ? HEADER_MAP[key] : undefined;
       if (field && m[field] === undefined) m[field] = String(idx);
     });
     setMapping(m);
@@ -236,11 +193,6 @@ function CsvImport() {
           const idx = mapping[field];
           if (idx !== undefined && idx !== "") o[field] = r[Number(idx)]?.trim() || null;
         }
-        if (o.characteristics || o.comment_extra) {
-          o.comment = [o.characteristics, o.comment, o.comment_extra].filter(Boolean).join("\n");
-          delete o.comment_extra;
-          delete o.characteristics;
-        }
         return o;
       });
       const r = await api<{ total: number; created: number; duplicates: number; errors: number }>(
@@ -250,7 +202,6 @@ function CsvImport() {
           body: {
             rows: items,
             file_name: fileName,
-            property_type: propertyType === "auto" ? undefined : propertyType,
             status: isStaff ? status : undefined,
           },
         },
@@ -264,15 +215,7 @@ function CsvImport() {
     <div className="space-y-4">
       <Card>
         <CardHeader><CardTitle className="text-base">CSV з Google Таблиць</CardTitle><CardDescription>Файл → Завантажити → Значення, розділені комами (.csv)</CardDescription></CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-[220px_1fr]">
-          <Select value={propertyType} onValueChange={(v) => setPropertyType(v as any)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto">Авто з назви файлу</SelectItem>
-              <SelectItem value="house">Будинки</SelectItem>
-              <SelectItem value="apartment">Квартири</SelectItem>
-            </SelectContent>
-          </Select>
+        <CardContent>
           <Input type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
         </CardContent>
       </Card>

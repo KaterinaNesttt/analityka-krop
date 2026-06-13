@@ -7,10 +7,9 @@ import { FiltersBar, type SalesFilters } from "@/components/filters-bar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { fmtMoney, fmtArea, propertyTypeLabel, statusLabel } from "@/lib/format";
-import { ExternalLink, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
+import { fmtMoney, statusLabel } from "@/lib/format";
+import { ExternalLink, SlidersHorizontal } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { Card } from "@/components/ui/card";
 
 export function SalesListPage() {
   const navigate = useNavigate();
@@ -18,7 +17,7 @@ export function SalesListPage() {
   const isStaff = user?.role === "superuser" || user?.role === "admin" || user?.role === "moderator";
   const [filters, setFilters] = useState<SalesFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sort, setSort] = useState("sale_date_desc");
+  const [sort, setSort] = useState("created_at_desc");
 
 
   const { data, isLoading } = useQuery({
@@ -34,12 +33,11 @@ export function SalesListPage() {
         <Select value={sort} onValueChange={setSort}>
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="sale_date_desc">Дата ↓</SelectItem>
-            <SelectItem value="sale_date_asc">Дата ↑</SelectItem>
+            <SelectItem value="created_at_desc">Новіші</SelectItem>
+            <SelectItem value="created_at_asc">Старіші</SelectItem>
             <SelectItem value="price_desc">Ціна ↓</SelectItem>
             <SelectItem value="price_asc">Ціна ↑</SelectItem>
-            <SelectItem value="area_desc">Площа ↓</SelectItem>
-            <SelectItem value="district">За районом</SelectItem>
+            <SelectItem value="district">За Район/ЖК</SelectItem>
           </SelectContent>
         </Select>
         <Button variant={filtersOpen ? "default" : "outline"} size="sm" onClick={() => setFiltersOpen((v) => !v)}>
@@ -59,32 +57,34 @@ export function SalesListPage() {
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
               <tr>
-                <th className="text-left p-3">Дата</th>
-                <th className="text-left p-3">Тип</th>
-                <th className="text-left p-3">Район</th>
-                <th className="text-left p-3">Кімн.</th>
-                <th className="text-left p-3">Площа</th>
+                <th className="text-left p-3">Район/ЖК</th>
                 <th className="text-left p-3">Поверх</th>
-                <th className="text-right p-3">Ціна</th>
+                <th className="text-left p-3">Характеристика</th>
+                <th className="text-left p-3">Термін продажу</th>
+                <th className="text-right p-3">Старт ціна</th>
+                <th className="text-right p-3">Продаж ціна</th>
+                <th className="text-left p-3">Коментар</th>
+                {isStaff && <th className="text-left p-3">Статус</th>}
                 <th className="p-3"></th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
-                <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Завантаження…</td></tr>
+                <tr><td colSpan={isStaff ? 9 : 8} className="p-8 text-center text-muted-foreground">Завантаження…</td></tr>
               )}
               {!isLoading && rows.length === 0 && (
-                <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Немає даних</td></tr>
+                <tr><td colSpan={isStaff ? 9 : 8} className="p-8 text-center text-muted-foreground">Немає даних</td></tr>
               )}
               {rows.map((r) => (
                 <tr onClick={() => navigate(`/sales/${r.id}`)} key={r.id} className="border-t cursor-pointer hover:bg-muted/30">
-                  <td className="p-3 whitespace-nowrap">{fmtMonthYear(r.sale_date)}</td>
-                  <td className="p-3">{r.building_type ?? propertyTypeLabel(r.property_type)}</td>
-                  <td className="p-3">{r.district}</td>
-                  <td className="p-3">{r.rooms ?? "—"}</td>
-                  <td className="p-3">{fmtArea(r.total_area)}</td>
-                   <td className="p-3">{r.floor ? `${r.floor}/${r.floors_total ?? "?"}` : "—"}</td>
-                  <td className="p-3 text-right font-medium">{fmtMoney(r.final_price, r.currency)}</td>
+                  <td className="p-3 font-medium">{r.district}</td>
+                  <td className="p-3 whitespace-nowrap">{r.floor ?? "—"}</td>
+                  <td className="p-3 max-w-xs truncate">{r.characteristics ?? "—"}</td>
+                  <td className="p-3 whitespace-nowrap">{r.sale_term ?? "—"}</td>
+                  <td className="p-3 text-right">{fmtMoney(r.initial_price)}</td>
+                  <td className="p-3 text-right font-medium">{fmtMoney(r.final_price)}</td>
+                  <td className="p-3 max-w-xs truncate">{r.comment ?? "—"}</td>
+                  {isStaff && <td className="p-3"><Badge variant={r.status === "approved" ? "default" : "secondary"}>{statusLabel(r.status)}</Badge></td>}
                   <td className="p-3 text-right">
                     <button className="text-primary  inline-flex items-center gap-1">
                       Деталі <ExternalLink className="h-3 w-3" />
@@ -97,10 +97,4 @@ export function SalesListPage() {
       </div>
     </PageShell>
   );
-}
-
-function fmtMonthYear(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("uk-UA", { month: "long", year: "numeric" }).format(date);
 }

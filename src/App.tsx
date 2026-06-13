@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { AuthenticatedLayout } from "./layouts/AuthenticatedLayout";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
+import { PriceDetailPage } from "./pages/PriceDetailPage";
 import { AuthPage } from "./pages/AuthPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ImportPage } from "./pages/ImportPage";
@@ -35,6 +36,7 @@ export default function App() {
       <Route element={<AuthenticatedLayout />}>
         <Route path="/dashboard" element={<RequireRole roles={STAFF_ROLES}><DashboardPage /></RequireRole>} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/analytics/prices" element={<PriceDetailPage />} />
         <Route path="/sales" element={<SalesListPage />} />
         <Route path="/sales/new" element={<NewSalePage />} />
         <Route path="/sales/:id" element={<SaleDetailPage />} />

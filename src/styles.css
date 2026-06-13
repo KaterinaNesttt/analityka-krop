@@ -159,9 +159,13 @@
   }
 
   .asset-active-pill {
-    aspect-ratio: 94 / 30;
+    aspect-ratio: 185 / 60;
     --surface-image: url("../приклад/sidebar-active-pill.png");
-    border-radius: 9px;
+        --png-fit-left: -3%;
+    --png-fit-top: 0%;
+    --png-fit-right: -1.67%;
+    --png-fit-bottom: -1.02%;
+    
   }
 
   .asset-team-pill {
@@ -338,8 +342,8 @@
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.56),
-      rgba(255, 255, 255, 0.20) 28%,
+      rgba(255, 255, 255, 0.76),
+      rgba(255, 255, 255, 0.40) 28%,
       transparent 68%
     );
 

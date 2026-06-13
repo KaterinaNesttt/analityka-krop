@@ -2,11 +2,20 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+const cardBackgroundUrl = new URL("../../../приклад/primary-sheet.png", import.meta.url).href;
+
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("glass-edge shadow-[8px_8px_6px_rgba(0,0,0,0.45)] text-card-foreground", className)}
+      className={cn("glass-edge shadow-[8px_8px_6px_rgba(0,0,0,0.45)] backdrop-blur-sm text-card-foreground", className)}
+      style={{
+        backgroundImage: `url(${cardBackgroundUrl})`,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        ...style,
+      }}
       {...props}
     />
   ),
