@@ -231,7 +231,9 @@ function buildAnalytics(rows: Sale[], filters: SalesFilters) {
   // Поверхи — БЕЗ сортування
   const floorRows: ChartItem[] = Object.values(
     groupBy(
-      rows.filter((sale) => sale.floor),
+      rows
+        .map((sale) => ({ ...sale, floor: sale.floor?.split("/")[0].trim() || null }))
+        .filter((sale) => sale.floor),
       (sale) => sale.floor || "Не вказано",
     ),
   ).map((items) => ({

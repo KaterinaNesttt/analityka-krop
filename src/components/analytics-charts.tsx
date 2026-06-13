@@ -251,7 +251,7 @@ function PriceTooltip({
    ═══════════════════════════════════════════ */
 
 function FloorsDonutCard({ data }: { data: ChartItem[] }) {
-  const floorLabels = ["1", "2", "3", "4", "5", "6"];
+  const floorLabels = ["1", "2", "3", "4", "5"];
   const floorColors = ["#d4a84f", "#06b6d4", "#8b5cf6", "#10b981", "#ea7c49", "#ec4899"];
   const shown = data
     .filter((item) => floorLabels.includes(String(item.label).trim()))
