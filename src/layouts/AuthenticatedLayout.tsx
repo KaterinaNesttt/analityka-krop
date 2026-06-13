@@ -1,28 +1,32 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme";
-import {
-  LayoutDashboard, BarChart3, Table2, Plus, Upload, ShieldCheck, Users, Settings,
-} from "lucide-react";
+import dashboardIcon from "@/assets/icons/dashboard.svg";
+import analyticsIcon from "@/assets/icons/analytics.svg";
+import salesIcon from "@/assets/icons/sales.svg";
+import addSaleIcon from "@/assets/icons/add-sale.svg";
+import importIcon from "@/assets/icons/import.svg";
+import moderationIcon from "@/assets/icons/moderation.svg";
+import usersIcon from "@/assets/icons/users.svg";
+import settingsIcon from "@/assets/icons/settings.svg";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BackgroundLayer } from "@/components/background-layer";
 import { MobileBottomBar } from "@/components/mobile-bottom-bar";
 
-interface NavItem { to: string; label: string; icon: LucideIcon; roles?: string[]; }
+interface NavItem { to: string; label: string; icon: string; roles?: string[]; }
 
 const STAFF_ROLES = ["superuser", "admin", "moderator"];
 
 const NAV: NavItem[] = [
-  { to: "/dashboard", label: "Дашборд", icon: LayoutDashboard, roles: STAFF_ROLES },
-  { to: "/analytics", label: "Аналітика", icon: BarChart3 },
-  { to: "/sales", label: "Продажі", icon: Table2 },
-  { to: "/sales/new", label: "Додати продаж", icon: Plus },
-  { to: "/import", label: "Імпорт", icon: Upload, roles: STAFF_ROLES },
-  { to: "/moderation", label: "Модерація", icon: ShieldCheck, roles: ["admin", "moderator"] },
-  { to: "/users", label: "Користувачі", icon: Users, roles: ["admin"] },
-  { to: "/settings", label: "Налаштування", icon: Settings },
+  { to: "/dashboard", label: "Дашборд", icon: dashboardIcon, roles: STAFF_ROLES },
+  { to: "/analytics", label: "Аналітика", icon: analyticsIcon },
+  { to: "/sales", label: "Продажі", icon: salesIcon },
+  { to: "/sales/new", label: "Додати продаж", icon: addSaleIcon },
+  { to: "/import", label: "Імпорт", icon: importIcon, roles: STAFF_ROLES },
+  { to: "/moderation", label: "Модерація", icon: moderationIcon, roles: ["admin", "moderator"] },
+  { to: "/users", label: "Користувачі", icon: usersIcon, roles: ["admin"] },
+  { to: "/settings", label: "Налаштування", icon: settingsIcon },
 ];
 
 export function AuthenticatedLayout() {
