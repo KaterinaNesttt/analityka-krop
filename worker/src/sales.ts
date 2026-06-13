@@ -3,13 +3,14 @@ import { json, err, uid, nowIso } from './utils';
 import { requireApproved, requireRole } from './middleware';
 
 
-const PUBLIC_FIELDS = `id, property_type, district, rooms, total_area,
-  floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
-  initial_price, final_price, currency, sale_date, source_type, comment, status, created_at`;
+  const PUBLIC_FIELDS = `id, property_type, district, rooms, total_area,
+    floor, floors_total, building_type, land_area, communications, amenities, condition, furniture, sale_term,
+    initial_price, final_price, currency, sale_date, source_type, comment, status, created_at`;
 const STAFF_FIELDS = PUBLIC_FIELDS + ', updated_at';
 
 export interface SaleFilters {
-  district?: string; price_min?: number; price_max?: number; status?: string;
+  district?: string; districts?: string[]; price_min?: number; price_max?: number; status?: string;
+  floor?: string; rooms?: string; property_type?: string; sale_term?: string; condition?: string; furniture?: string;
 }
 
 export function parseFilters(url: URL): SaleFilters {
@@ -18,8 +19,15 @@ export function parseFilters(url: URL): SaleFilters {
   const get = (k: string) => p.get(k) ?? undefined;
   const num = (k: string) => { const v = p.get(k); return v ? Number(v) : undefined; };
   f.district = get('district');
+  f.districts = [...p.getAll('districts'), ...p.getAll('districts[]')].map((v) => v.trim()).filter(Boolean);
   f.price_min = num('price_min'); f.price_max = num('price_max');
   f.status = get('status');
+  f.floor = get('floor');
+  f.rooms = get('rooms');
+  f.property_type = get('property_type');
+  f.sale_term = get('sale_term');
+  f.condition = get('condition');
+  f.furniture = get('furniture');
   return f;
 }
 
@@ -27,9 +35,16 @@ export function buildWhere(f: SaleFilters, forUser: boolean): { sql: string; par
   const w: string[] = []; const params: any[] = [];
   if (forUser) w.push("status = 'approved'");
   else if (f.status) { w.push('status = ?'); params.push(f.status); }
-  if (f.district) { w.push('district = ?'); params.push(f.district); }
+  if (f.districts?.length) { w.push(`district IN (${f.districts.map(() => '?').join(', ')})`); params.push(...f.districts); }
+  else if (f.district) { w.push('district = ?'); params.push(f.district); }
   if (f.price_min !== undefined) { w.push('final_price >= ?'); params.push(f.price_min); }
   if (f.price_max !== undefined) { w.push('final_price <= ?'); params.push(f.price_max); }
+  if (f.floor) { w.push('floor = ?'); params.push(f.floor); }
+  if (f.rooms) { w.push('rooms = ?'); params.push(f.rooms); }
+  if (f.property_type) { w.push('property_type = ?'); params.push(f.property_type); }
+  if (f.sale_term) { w.push('sale_term = ?'); params.push(f.sale_term); }
+  if (f.condition) { w.push('condition = ?'); params.push(f.condition); }
+  if (f.furniture) { w.push('furniture = ?'); params.push(f.furniture); }
   return { sql: w.length ? ' WHERE ' + w.join(' AND ') : '', params };
 }
 

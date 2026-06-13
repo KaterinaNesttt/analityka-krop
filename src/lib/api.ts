@@ -37,7 +37,7 @@ export class ApiError extends Error {
 interface ReqOpts {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
-  query?: Record<string, string | number | undefined>;
+  query?: Record<string, string | number | Array<string | number> | undefined>;
   auth?: boolean;
 }
 
@@ -67,13 +67,20 @@ async function doRefresh(): Promise<boolean> {
 
 export async function api<T = any>(path: string, opts: ReqOpts = {}): Promise<T> {
   const { method = 'GET', body, query, auth = true } = opts;
-  const qs = query
-    ? '?' +
-      Object.entries(query)
-        .filter(([, v]) => v !== undefined && v !== '' && v !== null)
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join('&')
-    : '';
+  const search = new URLSearchParams();
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          if (item !== undefined && item !== '' && item !== null) search.append(key, String(item));
+        });
+        return;
+      }
+      if (value !== undefined && value !== '' && value !== null) search.append(key, String(value));
+    });
+  }
+  const queryString = search.toString();
+  const qs = queryString ? `?${queryString}` : '';
   const url = `${BASE_URL}${path}${qs}`;
 
   const run = async (): Promise<Response> => {

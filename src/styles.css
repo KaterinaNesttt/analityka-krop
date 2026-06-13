@@ -146,17 +146,99 @@
 
 @layer components {
   .app-fixed-bg {
-    background-image: linear-gradient(180deg, hsla(213, 58%, 4%, 0.18), hsla(213, 58%, 4%, 0.5)), url("../приклад/bg.png");
+    background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.12), hsla(190, 45%, 92%, 0.36)), url("../приклад/bg-lt.png");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
   }
 
-  .asset-sidebar {
-    background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.16), hsla(214, 41%, 3%, 0.18)), url("../приклад/1.png");
-    background-position: center;
-    background-size: cover;
+  .dark .app-fixed-bg {
+    background-image: linear-gradient(180deg, hsla(213, 58%, 4%, 0.18), hsla(213, 58%, 4%, 0.5)), url("../приклад/bg.png");
   }
+
+  @media (max-width: 767px) {
+    .app-fixed-bg {
+      background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.1), hsla(190, 45%, 92%, 0.3)), url("../приклад/bg-mb-lt.png");
+    }
+
+    .dark .app-fixed-bg {
+      background-image: linear-gradient(180deg, hsla(213, 58%, 4%, 0.16), hsla(213, 58%, 4%, 0.46)), url("../приклад/bg-mb.png");
+    }
+  }
+
+
+
+  .asset-sidebar {
+  --sidebar-blur: 6px;
+
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  contain: layout paint style;
+
+  border-radius: 1.5rem;
+  background-color: rgba(10, 10, 14, 0.34);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
+  border-left: 1px solid rgba(255, 255, 255, 0.11);
+  border-right: 1px solid rgba(255, 255, 255, 0.045);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+
+  box-shadow: 10px 12px 18px rgba(0, 0, 0, 0.30);
+}
+
+.asset-sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-color: rgba(10, 10, 14, 0.24);
+  -webkit-backdrop-filter: blur(var(--sidebar-blur)) saturate(1.22) contrast(1.035);
+  backdrop-filter: blur(var(--sidebar-blur)) saturate(1.22) contrast(1.035);
+}
+
+  .asset-mobar {
+  --sidebar-blur: 6px;
+
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  contain: layout paint style;
+
+  border-radius: 1.5rem;
+  background-color: rgba(10, 10, 14, 0.34);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
+  border-left: 1px solid rgba(255, 255, 255, 0.11);
+  border-right: 1px solid rgba(255, 255, 255, 0.045);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+
+  box-shadow: 10px 12px 18px rgba(0, 0, 0, 0.30);
+}
+
+.asset-mobar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-color: rgba(10, 10, 14, 0.24);
+  -webkit-backdrop-filter: blur(var(--sidebar-blur)) saturate(1.22) contrast(1.035);
+  backdrop-filter: blur(var(--sidebar-blur)) saturate(1.22) contrast(1.035);
+}
+
+
+
+
+.asset-sidebar-header,
+.asset-sidebar-nav,
+.asset-sidebar-footer {
+  position: relative;
+  z-index: 1;
+}
 
   .asset-active-pill {
     aspect-ratio: 185 / 60;
@@ -165,6 +247,23 @@
     --png-fit-top: 0%;
     --png-fit-right: -1.67%;
     --png-fit-bottom: -1.02%;
+
+  }
+
+
+    .asset-mb-sd {
+    background-image: linear-gradient(180deg, hsla(0, 0%, 100%, 0.16), hsla(214, 41%, 3%, 0.18)), url("../приклад/mb-sb.png");
+    background-position: center;
+    background-size: cover;
+  }
+
+  .asset-mb-sd-active-pill {
+    aspect-ratio: 60 / 60;
+    --surface-image: url("../приклад/mb-sb-active-pill.png");
+    --png-fit-left: 0%;
+    --png-fit-top: 0%;
+    --png-fit-right: 0%;
+    --png-fit-bottom: 0%;
     
   }
 
@@ -253,6 +352,7 @@
   }
 
   .asset-active-pill,
+  .asset-mb-sd-active-pill,
   .asset-cta-pill,
   .asset-team-pill,
   .surface-primary,
@@ -271,6 +371,7 @@
   }
 
   .asset-active-pill::before,
+  .asset-mb-sd-active-pill::before,
   .asset-cta-pill::before,
   .asset-team-pill::before,
   .surface-primary::before,
@@ -298,6 +399,7 @@
   }
 
   .asset-active-pill > *,
+  .asset-mb-sd-active-pill > *,
   .asset-cta-pill > *,
   .asset-team-pill > *,
   .surface-primary > *,
@@ -332,33 +434,51 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.glass-edge::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
+.glass-edge {
+  --glass-radius: 24px;
+  --glass-blur: 7px;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.76),
-      rgba(255, 255, 255, 0.40) 28%,
-      transparent 68%
-    );
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  contain: paint;
 
-  opacity: 0.45;
+  border-radius: var(--glass-radius);
+
+  background-color: rgba(255, 255, 255, 0.48);
+
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.18) contrast(1.02);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.18) contrast(1.02);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.78);
+  border-left: 1px solid rgba(255, 255, 255, 0.48);
+  border-right: 1px solid rgba(12, 24, 38, 0.08);
+  border-bottom: 1px solid rgba(12, 24, 38, 0.1);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 1px 0 0 rgba(255, 255, 255, 0.32);
 }
 
-.glass-edge::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: calc(var(--glass-radius, 24px) - 1px);
-  pointer-events: none;
+.dark .glass-edge {
+  background-color: rgba(18, 18, 22, 0.38);
 
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.28) contrast(1.04);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.28) contrast(1.04);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.26);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.065);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    inset 1px 0 0 rgba(255, 255, 255, 0.035);
+}
+
+.glass-edge::before,
+.glass-edge::after {
+  content: none;
 }
 
   .inset-surface {
